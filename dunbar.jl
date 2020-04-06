@@ -186,7 +186,7 @@ which are gossipable.
 """
 function proportionAreGossipable(n, k)
   # easily-proven lower bound
-  if (k < n)
+  if (k < 1.5*(n-1))
     return 0.0
   end
 
@@ -196,5 +196,6 @@ function proportionAreGossipable(n, k)
     count += isGossipable(G)
     total += 1
   end
-  return count / total 
+  println(count, " / ", total)
+  return count / total
 end
