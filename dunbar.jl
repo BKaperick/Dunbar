@@ -29,24 +29,30 @@ end
 
 Counts the number of graphs with `n` nodes exist with `k` edges.
 """
-function numPaths(n::Int8,k::Int8)::Int8
+function numPaths(n::Int64,k::Int64)::Int64
   b = n*(n-1)/2
   return paths(b,k)
 end
 
 mutable struct BitIt
-  n::Int64
-  k::Int64
-  start::Array{Bool,1}
-  i::Int64
-  l::Int64
+  n::Int64 # number of bits
+  k::Int64 # number of active bits (hamming weight)
+  i::Int64 # current index within iteration
+  l::Int64 # current active bit within iteration
 end
 
-BitIt(n::Integer,k::Integer) = BitIt(n,k,vcat([true for _ in range(1,stop=k)], [false for _ in range(1,stop=n-k)]),k,k)
+BitIt(numBits::Int64,numActive::Int64) = numBits >= numActive ? BitIt(numBits,numActive,numActive,numActive) : throw(ArgumentError("numActive cannot be larger than numBits"))
 
-function Base.iterate(bi::BitIt, state=(bi.start, 0))
+function Base.iterate(bi::BitIt, state=(vcat([true for _ in range(1,stop=bi.k)], [false for _ in range(1,stop=bi.n-bi.k)]), 0))
   elem,count = state
   k,n,i,l = bi.k,bi.n,bi.i,bi.l
+
+  # Base case
+  if (n == k || k == 0)
+    return count == 0 ? (elem, (elem, count+1)) : nothing
+  end
+
+  # End of iteration, but still need to return final value
   if l == 0
     if i > 0
       bi.i = 0
@@ -61,6 +67,7 @@ function Base.iterate(bi::BitIt, state=(bi.start, 0))
       bi.l -= 1
       return Base.iterate(bi, state)
     else
+      # Have identified the correct bit to "shift" over
       out = copy(elem)
       groupend = i+1+k-l
       out[i+1:groupend] .= true
@@ -68,7 +75,6 @@ function Base.iterate(bi::BitIt, state=(bi.start, 0))
       out[i] = false
       bi.i = groupend
       bi.l = k
-      #println("$(elem) -> $(out)")
       return (elem, (out, count+1))
     end
   else
@@ -78,11 +84,6 @@ function Base.iterate(bi::BitIt, state=(bi.start, 0))
 end
 
 Base.length(bi::BitIt) = paths(bi.n, bi.k)
-
-#bi = BitIt(6,3)
-#for (cnt,i) in enumerate(bi)
-#  print("output: ", i, "\n")
-#end
 
 """
     generateActiveBitArrays(n, k)
@@ -132,11 +133,6 @@ function notall(a::Array{Array{Bool, 1},1})
   return [notall(x) for x in a]
 end
 
-for n=1:8
-  for k=0:n
-    @assert paths(n,k) == length(generateActiveBitArrays(n,k))
-  end
-end
 """
     initializeGraph(nodes, edges)
 
@@ -188,10 +184,6 @@ Decides if all nodes contained in graph `G` are in a triangle.
 function isGossipable(G)
   return all([isInTriangle(G,n) for (n,es) in G])
 end
-nodes = ["a","b","c","d"]
-edges = [("a","b"),("b","c"),("c","a"),("a","d")]
-G = initializeGraph(nodes, edges)
-println(isGossipable(G))
 
 """
     generateGs(n, k)
