@@ -34,6 +34,56 @@ function numPaths(n::Int8,k::Int8)::Int8
   return paths(b,k)
 end
 
+mutable struct BitIt
+  n::Int64
+  k::Int64
+  start::Array{Bool,1}
+  i::Int64
+  l::Int64
+end
+
+BitIt(n::Integer,k::Integer) = BitIt(n,k,vcat([true for _ in range(1,stop=k)], [false for _ in range(1,stop=n-k)]),k,k)
+
+function Base.iterate(bi::BitIt, state=(bi.start, 0))
+  elem,count = state
+  k,n,i,l = bi.k,bi.n,bi.i,bi.l
+  if l == 0
+    if i > 0
+      bi.i = 0
+      return (elem, state)
+    else
+      return nothing
+    end
+  end
+  if elem[i]
+    if i == n || elem[i+1]
+      bi.i -= 1
+      bi.l -= 1
+      return Base.iterate(bi, state)
+    else
+      out = copy(elem)
+      groupend = i+1+k-l
+      out[i+1:groupend] .= true
+      out[groupend+1:n] .= false
+      out[i] = false
+      bi.i = groupend
+      bi.l = k
+      #println("$(elem) -> $(out)")
+      return (elem, (out, count+1))
+    end
+  else
+    bi.i -= 1
+    return Base.iterate(bi, state)
+  end
+end
+
+Base.length(bi::BitIt) = paths(bi.n, bi.k)
+
+#bi = BitIt(6,3)
+#for (cnt,i) in enumerate(bi)
+#  print("output: ", i, "\n")
+#end
+
 """
     generateActiveBitArrays(n, k)
 
@@ -46,36 +96,33 @@ end
 function generateActiveBitArrays(n, k, cache::Dict{Tuple{Int64,Int64},Array{Array{Bool,1},1}})::Array{Array{Bool,1},1}
   cache[2,1] = [[true,false],[false,true]]
   if (haskey(cache, (n,k)))
-    return cache[n,k]
-  end
-  if (n == 0)
-    cache[n,k] = []
-    return []
-  end
-  if (n == 2 && k == 1)
-    cache[n,k] = [[true,false],[false,true]]
-    return [[true,false],[false,true]]
-  end
-  root = vcat([true for _ in range(1,stop=k)], [false for _ in range(1,stop=n-k)])
-  if (k == 0 || n == k || n == 1)
-    cache[n,k] = [root]
-    return [root]
-  elseif (k > n/2)
-    return notall(generateActiveBitArrays(n, n-k,cache))
+    result = cache[n,k]
+  elseif (n == 0)
+    result = []
+  elseif (n == 2 && k == 1)
+    result = [[true,false],[false,true]]
   else
-    inner00 = [vcat(false, inner, false) for inner in generateActiveBitArrays(n-2,k,cache)] 
-    inner01 = [vcat(false,inner,true) for inner in generateActiveBitArrays(n-2,k-1,cache)]
-    inner10 = [vcat(true, inner,false) for inner in generateActiveBitArrays(n-2,k-1,cache)]
-    val1 = vcat(inner00,inner01,inner10)
-    if (k == 1)
-      cache[n,k] = val1
-      return val1
+    root = vcat([true for _ in range(1,stop=k)], [false for _ in range(1,stop=n-k)])
+    if (k == 0 || n == k || n == 1)
+      result = [root]
+    elseif (k > n/2)
+      result = notall(generateActiveBitArrays(n, n-k,cache))
     else
-      inner11 = [vcat(true,inner,true) for inner in generateActiveBitArrays(n-2,k-2,cache)]
-      val2 = vcat(val1, inner11)
-      cache[n,k] = val2
+      inner00 = [vcat(false, inner, false) for inner in generateActiveBitArrays(n-2,k,cache)] 
+      inner01 = [vcat(false,inner,true) for inner in generateActiveBitArrays(n-2,k-1,cache)]
+      inner10 = [vcat(true, inner,false) for inner in generateActiveBitArrays(n-2,k-1,cache)]
+      val1 = vcat(inner00,inner01,inner10)
+      if (k == 1)
+        result = val1
+      else
+        inner11 = [vcat(true,inner,true) for inner in generateActiveBitArrays(n-2,k-2,cache)]
+        val2 = vcat(val1, inner11)
+        result = val2
+      end
     end
   end
+  cache[n,k] = result
+  return result
 end
 
 function notall(a::Array{Bool,1})
