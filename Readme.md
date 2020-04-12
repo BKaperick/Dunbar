@@ -1,4 +1,21 @@
 
+# Introduction 
+
+We investigate [Dunbar's Number](https://en.wikipedia.org/wiki/Dunbar%27s_number) which claims that humans can "comfortably maintain ~150 stable relationships".  Some sociological research explains this threshold as the maximal size for a stable organization without explicitly-enforced heirarchies in place.  Moreover, stability in human organizations without these heirarchies are strengthened by humans' natural tendency to gossip as a form of bonding.
+
+## Mathematical Structure
+
+Here, we model such an informal human organization, where each node represents a person, and each edge represents some general sense of mutual knowing-eachotherness.  We say person A and distinct person B can gossip about distinct person C if and only if person A and C share an edge and person B and C share an edge.  That is, `A`,`B`, and `C` form a triangle subgraph.
+
+Then, we say a graph `G` is *gossipable* if every node `A` in `G` has the ability to gossip with a distinct node `C` in `G` about at least one other node `C` in `G`. 
+So, this is equivalent to the statement that every node in `G` is part of a triangle subgraph.
+
+## Goals of this Project
+We hope to investigate gossipability in the context of Dunbar's number.  Ideally, we want to be able to motivate the value 150 with an argument stemming from gossipability.  
+
+Firstly, we must develop code that scales well enough to compute gossipability for classes of graphs on the order of 150 nodes.  Given the scaling of our current implementation, we suspect randomized approximations will serve as a necessary tool to achieve the desired results.
+
+
 # Timing Comparisions
 Comparing the currrent implementation of `ProportionAreGossipable(n,k)`, denoted `pag3` and the previous two iterations.
 We can see the current implementation `pag3` gives us a pretty good increase over the naive `pag1` and only slightly less naive `pag2`.
@@ -91,15 +108,17 @@ Observe for graphs of `n=8` nodes, we reach infeasibility with `k=17` edges for 
 We need at least `n=3` nodes to ask non-trivially about gossipability of a graph.  And mod some symmetry, there are `n(n-1)/2 - ceil(n(n-1)/4) + 1` classes of graphs with `n` nodes to test.
 
 
-n            | 3| 4| 5| 6| 7| 8|
+n            | 3| 4| 5| 6| 7| 8|...|150
 --------------------------------------
-cum. classes | 2| 6|11|19|30|44|
+cum. classes | 2| 6|12|20|31|46|...|281,348
 
 
 So we can compare across iterations by computing how many classes the current iteration can achieve with each test being feasible.
 
-Iteration | Number of feasible class checks
--------------------------------------------
-pag1      | 28
-pag2      | 28
-pag3      | 37
+Iteration | Number of feasible class checks| Commit
+----------------------------------------------------
+pag1      | 28 / 281,348                   | c7721da
+pag2      | 28 / 281,348                   | f4373b
+pag3      | 37 / 281,348                   | HEAD
+
+Again, for the motivating application, the goal is to do these compations for `n~150`, so we include that as reference.
