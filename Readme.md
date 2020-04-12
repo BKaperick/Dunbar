@@ -1,7 +1,9 @@
 
-# Benchmarking
+# Timing Comparisions
 Comparing the currrent implementation of `ProportionAreGossipable(n,k)`, denoted `pag3` and the previous two iterations.
 We can see the current implementation `pag3` gives us a pretty good increase over the naive `pag1` and only slightly less naive `pag2`.
+
+For general discussion, we'll consider a function as  *infeasible* if it takes longer than 300 seconds on my machine.
 
  ────────────────────────────────────────────────────────────────────
                              Time                   Allocations      
@@ -15,7 +17,11 @@ We can see the current implementation `pag3` gives us a pretty good increase ove
  pag3(7,9)        1    4.74s  0.70%   4.74s   2.59GiB  0.40%  2.59GiB
  ────────────────────────────────────────────────────────────────────
 
-For computations on my laptop, we see the previous two implementations are infeasible for graphs beyond ~7 nodes at the minimum.
+For computations on my laptop, we see the previous two implementations are infeasible for testing gossipability of graphs of 7 nodes.
+
+
+## Latest Iteration
+
 
  ──────────────────────────────────────────────────────────────────────────
                                    Time                   Allocations      
@@ -33,8 +39,10 @@ For computations on my laptop, we see the previous two implementations are infea
  pag(6,14)(15)          3   1.49ms  0.23%   496μs    366KiB  0.10%   122KiB
  pag(6,15)(1)           3    522μs  0.08%   174μs   38.2KiB  0.01%  12.7KiB
  ──────────────────────────────────────────────────────────────────────────
- 
-────────────────────────────────────────────────────────────────────────────
+
+Note by symmetry that `pag(7,11)` should be approximately comparable to `pag(7,9)` from the above timing comparison.   
+
+ ────────────────────────────────────────────────────────────────────────────
                                      Time                   Allocations      
                              ──────────────────────   ───────────────────────
       Tot / % measured:           48.7s / 97.2%           28.4GiB / 92.6%    
@@ -53,3 +61,45 @@ For computations on my laptop, we see the previous two implementations are infea
  pag(7,20)(21)            3   1.67ms  0.00%   558μs    615KiB  0.00%   205KiB
  pag(7,21)(1)             3    698μs  0.00%   233μs   45.8KiB  0.00%  15.3KiB
  ────────────────────────────────────────────────────────────────────────────
+
+
+Observe for graphs of `n=8` nodes, we reach infeasibility with `k=17` edges for the latest iteration.  The largest class of graphs to test with 8 nodes would be `k=14`, so we still cannot fully compute with 8 nodes.
+
+ ──────────────────────────────────────────────────────────────────────────────
+                                       Time                   Allocations
+                               ──────────────────────   ───────────────────────
+       Tot / % measured:            1556s / 51.5%            470GiB / 92.6%
+
+ Section               ncalls     time   %tot     avg     alloc   %tot      avg
+ ──────────────────────────────────────────────────────────────────────────────
+ pag(8,17)(21474180)        1     368s  46.0%    368s    201GiB  46.1%   201GiB
+ pag(8,18)(13123110)        1     230s  28.7%    230s    123GiB  28.3%   123GiB
+ pag(8,19)(6906900)         1     117s  14.7%    117s   65.3GiB  15.0%  65.3GiB
+ pag(8,20)(3108105)         1    54.4s  6.79%   54.4s   29.7GiB  6.83%  29.7GiB
+ pag(8,21)(1184040)         1    21.8s  2.73%   21.8s   11.5GiB  2.64%  11.5GiB
+ pag(8,22)(376740)          1    6.40s  0.80%   6.40s   3.69GiB  0.85%  3.69GiB
+ pag(8,23)(98280)           1    1.88s  0.23%   1.88s   0.98GiB  0.22%  0.98GiB
+ pag(8,24)(20475)           1    418ms  0.05%   418ms    211MiB  0.05%   211MiB
+ pag(8,25)(3276)            1   61.6ms  0.01%  61.6ms   34.1MiB  0.01%  34.1MiB
+ pag(8,26)(378)             1   8.40ms  0.00%  8.40ms   3.97MiB  0.00%  3.97MiB
+ pag(8,27)(28)              1   1.25ms  0.00%  1.25ms    309KiB  0.00%   309KiB
+ pag(8,28)(1)               1    203μs  0.00%   203μs   17.6KiB  0.00%  17.6KiB
+ ──────────────────────────────────────────────────────────────────────────────
+
+# Summary Comparison
+
+We need at least `n=3` nodes to ask non-trivially about gossipability of a graph.  And mod some symmetry, there are `n(n-1)/2 - ceil(n(n-1)/4) + 1` classes of graphs with `n` nodes to test.
+
+
+n            | 3| 4| 5| 6| 7| 8|
+--------------------------------------
+cum. classes | 2| 6|11|19|30|44|
+
+
+So we can compare across iterations by computing how many classes the current iteration can achieve with each test being feasible.
+
+Iteration | Number of feasible class checks
+-------------------------------------------
+pag1      | 28
+pag2      | 28
+pag3      | 37
