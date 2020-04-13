@@ -70,13 +70,22 @@ Decides if the node named `node` in `graph` is part of a triangle.  That is,
 there exists a neighbor node `m` for which `node` and `m` have a mutual, 
 distinct neighbor.
 """
-function isInTriangle(graph,node)
+function isInTriangle(graph::Symmetric{Bool,Array{Bool,2}},node)
+  edges(node) = [i for (i,n) in enumerate(graph[node,1:end]) if n]
+  for e in edges(node)
+    for ee in edges(e)
+      if graph[node,ee]
+        return true
+      end
+    end
+  end
+  return false
+end
+function isInTriangle(graph::Array{Array{Int64,1},1},node)
   edges = graph[node]
-  next = []
-  for e in edges
-    next = vcat(next, [ee for ee in graph[e] if ee != node])
-    for n in next
-      if node in graph[n]
+  for e in graph[node]     # nbd of node
+    for ee in graph[e]     # nbd of e
+      if node in graph[ee] # is node in nbd of ee
         return true
       end
     end
