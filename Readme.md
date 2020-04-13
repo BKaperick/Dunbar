@@ -34,17 +34,6 @@ For computations on my laptop, we see the first two implementations are infeasib
 
 ## Latest Iteration
 
- Section         | ncalls |   time | %tot |   avg |   alloc | %tot |    avg
- ----------------|--------|--------|------|-------|---------|------|--------
- pag(6,8)(6435)  |      3 |  236ms |35.7% |78.6ms |  150MiB |40.2% |50.1MiB
- pag(6,9)(5005)  |      3 |  179ms |27.1% |59.5ms |  114MiB |30.5% |38.0MiB
- pag(6,10)(3003) |      3 |  136ms |20.6% |45.3ms | 66.8MiB |17.9% |22.3MiB
- pag(6,11)(1365) |      3 | 84.6ms |12.8% |28.2ms | 30.2MiB |8.07% |10.1MiB
- pag(6,12)(455)  |      3 | 15.3ms |2.31% |5.09ms | 10.1MiB |2.70% |3.37MiB
- pag(6,13)(105)  |      3 | 7.74ms |1.17% |2.58ms | 2.38MiB |0.64% | 812KiB
- pag(6,14)(15)   |      3 | 1.49ms |0.23% | 496μs |  366KiB |0.10% | 122KiB
- pag(6,15)(1)    |      3 |  522μs |0.08% | 174μs | 38.2KiB |0.01% |12.7KiB
-
 Note by symmetry that `pag(7,11)` should be approximately comparable to `pag(7,9)` from the above timing comparison.   
 
  Section           | ncalls |   time | %tot |   avg |   alloc | %tot |    avg
@@ -64,24 +53,23 @@ Note by symmetry that `pag(7,11)` should be approximately comparable to `pag(7,9
 
 Observe for graphs of `n=8` nodes, we reach infeasibility with `k=17` edges for the latest iteration.  The largest class of graphs to test with 8 nodes would be `k=14`, so we still cannot fully compute with 8 nodes.
 
- Section |              ncalls |    time |  %tot |    avg |    alloc |  %tot |     avg
- ------------------------------------------------------------------------------
+ Section             |  ncalls |    time |  %tot |    avg |    alloc |  %tot |     avg
+ -|-|--|--|--------------|---------|---------|---------
  pag(8,15)(37442160) |       1 |    393s | 26.6% |   393s |   373GiB | 24.3% |  373GiB
  pag(8,14)(40116600) |       1 |    370s | 25.1% |   370s |   400GiB | 26.0% |  400GiB
  pag(8,16)(30421755) |       1 |    287s | 19.4% |   287s |   303GiB | 19.7% |  303GiB
  pag(8,17)(21474180) |       1 |    195s | 13.2% |   195s |   214GiB | 13.9% |  214GiB
  pag(8,18)(13123110) |       1 |    122s | 8.29% |   122s |   131GiB | 8.51% |  131GiB
- pag(8,19)(6906900) |        1 |   62.8s | 4.25% |  62.8s |  68.9GiB | 4.48% | 68.9GiB
- pag(8,20)(3108105) |        1 |   30.3s | 2.05% |  30.3s |  31.0GiB | 2.01% | 31.0GiB
- pag(8,21)(1184040) |        1 |   11.6s | 0.79% |  11.6s |  11.8GiB | 0.77% | 11.8GiB
- pag(8,22)(376740) |         1 |   3.41s | 0.23% |  3.41s |  3.76GiB | 0.24% | 3.76GiB
- pag(8,23)(98280) |          1 |   904ms | 0.06% |  904ms |  0.98GiB | 0.06% | 0.98GiB
- pag(8,24)(20475) |          1 |   206ms | 0.01% |  206ms |   209MiB | 0.01% |  209MiB
- pag(8,25)(3276) |           1 |  31.5ms | 0.00% | 31.5ms |  33.4MiB | 0.00% | 33.4MiB
- pag(8,26)(378) |            1 |  3.92ms | 0.00% | 3.92ms |  3.86MiB | 0.00% | 3.86MiB
- pag(8,27)(28) |             1 |   272μs | 0.00% |  272μs |   294KiB | 0.00% |  294KiB
- pag(8,28)(1) |              1 |  76.6μs | 0.00% | 76.6μs |  11.3KiB | 0.00% | 11.3KiB
- ------------------------------------------------------------------------------
+ pag(8,19)(6906900)  |       1 |   62.8s | 4.25% |  62.8s |  68.9GiB | 4.48% | 68.9GiB
+ pag(8,20)(3108105)  |       1 |   30.3s | 2.05% |  30.3s |  31.0GiB | 2.01% | 31.0GiB
+ pag(8,21)(1184040)  |       1 |   11.6s | 0.79% |  11.6s |  11.8GiB | 0.77% | 11.8GiB
+ pag(8,22)(376740)   |       1 |   3.41s | 0.23% |  3.41s |  3.76GiB | 0.24% | 3.76GiB
+ pag(8,23)(98280)    |       1 |   904ms | 0.06% |  904ms |  0.98GiB | 0.06% | 0.98GiB
+ pag(8,24)(20475)    |       1 |   206ms | 0.01% |  206ms |   209MiB | 0.01% |  209MiB
+ pag(8,25)(3276)     |       1 |  31.5ms | 0.00% | 31.5ms |  33.4MiB | 0.00% | 33.4MiB
+ pag(8,26)(378)  |       1 |  3.92ms | 0.00% | 3.92ms |  3.86MiB | 0.00% | 3.86MiB
+ pag(8,27)(28)     |       1 |   272μs | 0.00% |  272μs |   294KiB | 0.00% |  294KiB
+ pag(8,28)(1)    |       1 |  76.6μs | 0.00% | 76.6μs |  11.3KiB | 0.00% | 11.3KiB
 
 # Summary Comparison
 
