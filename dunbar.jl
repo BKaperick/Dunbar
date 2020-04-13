@@ -55,15 +55,11 @@ end
 Constructs the graph data structure from a set of string node names `nodes` and
 a set of 2-tuple relations stored in the iterable `edges`.
 """
-function initializeGraph(n,bitArray)::Symmetric{Int64,Array{Int64,2}}
+function initializeGraph(n,bitArray)::Symmetric{Bool,Array{Bool,2}}
   #G = Array{Int64}(undef, n, n)
-  G = zeros(Int64, n, n)
-  indexMap = []
-  for p=1:(n-1)
-    indexMap = vcat(indexMap,((p-1)*n + p + 1):(p*n))
-  end
-  G[indexMap] = bitArray
-  
+  G = zeros(Bool, n, n)
+  indexMap = reduce(vcat, [((p-1)*n + p + 1):(p*n) for p in 1:(n-1)])
+  G[indexMap] = bitArray 
   return Symmetric(G,:L)
 end
 
@@ -93,14 +89,14 @@ end
 
 Decides if all nodes contained in graph `G` are in a triangle.
 """
-isGossipable(G::Symmetric{Int64,Array{Int64,2}}) = !any(diag(G*G*G) .== 0)
+isGossipable(G::Symmetric{Bool,Array{Bool,2}}) = !any(diag(G*G*G) .== 0)
 
 mutable struct GraphIt
   n::Int64
   k::Int64
   bitArrays::BitIt
   bitState::Tuple{Array{Bool,1},Int64}
-  start::Symmetric{Int64,Array{Int64,2}}
+  start::Symmetric{Bool,Array{Bool,2}}
   onemore::Bool
 end
 
