@@ -1,6 +1,5 @@
 using TimerOutputs
 #using BenchmarkTools
-include("old_dunbar.jl")
 include("dunbar.jl")
 
 function profileBitItByN(k::Int64, nRange, T)
@@ -120,6 +119,8 @@ function timerOutputToMarkdown(to::TimerOutput)
   table = replace(table, Regex(String([Char(9472)])) => s"-")
 
   table = split(table,"\n")[6:end]
+  table[2] = "-|-|-|-|-|-|-|-"*table[2]
+  table = table[1:end-1]
   return reduce(*,map(x -> x*"\n", table))
 end
 #println(profileBitItByK(32,2:2:8,1))
