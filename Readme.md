@@ -22,73 +22,46 @@ We can see the current implementation `pag3` gives us a pretty good increase ove
 
 For general discussion, we'll consider a function as  *infeasible* if it takes longer than 300 seconds on my machine.
 
- Section   |  time | %tot |   alloc | %tot 
- ----------|-------|------|---------|------
- pag1(7,9) |  345s |50.9% |  325GiB |49.6% 
- pag2(7,9) |  326s |48.1% |  325GiB |49.6% 
- pag3(7,9) | 4.74s |0.70% | 2.59GiB |0.40% 
- pag4(7,9) | 2.18s |0.32% | 2.60GiB |0.40%
+ Section   |  time |   alloc 
+ ----------|-------|---------
+ pag1(7,9) |  345s |  325GiB 
+ pag2(7,9) |  326s |  325GiB 
+ pag3(7,9) | 4.74s | 2.59GiB 
+ pag4(7,9) | 2.18s | 2.60GiB 
+ pag5(7,9) | 1.24s | 1.91GiB
 
 For computations on my laptop, we see the first two implementations are infeasible for testing gossipability of graphs of even 7 nodes.
 
 
 ## Latest Iteration
 
-Note by symmetry that `pag(7,11)` should be approximately comparable to `pag(7,9)` from the above timing comparison.   
+Observe for graphs of `n=9` nodes, we reach infeasibility with `k=27` edges for the latest iteration.  The largest class of graphs to test with 9 nodes would be `k=18`, so we still cannot fully compute with 9 nodes.
 
- Section           | ncalls |   time | %tot |   avg |   alloc | %tot |    avg
- ------------------|--------|--------|------|-------|---------|------|--------
- pag(7,11)(352716) |      3 |  15.8s |33.3% | 5.25s | 9.00GiB |34.2% |3.00GiB
- pag(7,12)(293930) |      3 |  14.3s |30.2% | 4.76s | 7.37GiB |28.0% |2.46GiB
- pag(7,13)(203490) |      3 |  8.71s |18.4% | 2.90s | 5.05GiB |19.2% |1.68GiB
- pag(7,14)(116280) |      3 |  5.07s |10.7% | 1.69s | 2.87GiB |10.9% |0.96GiB
- pag(7,15)(54264)  |      3 |   2.31s| 4.87%|  769ms|  1.35GiB| 5.12%|  461MiB
- pag(7,16)(20349)  |      3 |  879ms |1.85% | 293ms |  525MiB |1.94% | 175MiB
- pag(7,17)(5985)   |      3 |  283ms |0.60% |94.2ms |  157MiB |0.58% |52.4MiB
- pag(7,18)(1330)   |      3 | 59.9ms |0.13% |20.0ms | 35.6MiB |0.13% |11.9MiB
- pag(7,19)(210)    |      3 | 8.98ms |0.02% |2.99ms | 5.75MiB |0.02% |1.92MiB
- pag(7,20)(21)     |      3 | 1.67ms |0.00% | 558μs |  615KiB |0.00% | 205KiB
- pag(7,21)(1)      |      3 |  698μs |0.00% | 233μs | 45.8KiB |0.00% |15.3KiB
-
-
-Observe for graphs of `n=8` nodes, we reach infeasibility with `k=17` edges for the latest iteration.  The largest class of graphs to test with 8 nodes would be `k=14`, so we still cannot fully compute with 8 nodes.
-
- Section             |  ncalls |    time |  %tot |    avg |    alloc |  %tot |     avg
- -|-|--|--|--------------|---------|---------|---------
- pag(8,15)(37442160) |       1 |    393s | 26.6% |   393s |   373GiB | 24.3% |  373GiB
- pag(8,14)(40116600) |       1 |    370s | 25.1% |   370s |   400GiB | 26.0% |  400GiB
- pag(8,16)(30421755) |       1 |    287s | 19.4% |   287s |   303GiB | 19.7% |  303GiB
- pag(8,17)(21474180) |       1 |    195s | 13.2% |   195s |   214GiB | 13.9% |  214GiB
- pag(8,18)(13123110) |       1 |    122s | 8.29% |   122s |   131GiB | 8.51% |  131GiB
- pag(8,19)(6906900)  |       1 |   62.8s | 4.25% |  62.8s |  68.9GiB | 4.48% | 68.9GiB
- pag(8,20)(3108105)  |       1 |   30.3s | 2.05% |  30.3s |  31.0GiB | 2.01% | 31.0GiB
- pag(8,21)(1184040)  |       1 |   11.6s | 0.79% |  11.6s |  11.8GiB | 0.77% | 11.8GiB
- pag(8,22)(376740)   |       1 |   3.41s | 0.23% |  3.41s |  3.76GiB | 0.24% | 3.76GiB
- pag(8,23)(98280)    |       1 |   904ms | 0.06% |  904ms |  0.98GiB | 0.06% | 0.98GiB
- pag(8,24)(20475)    |       1 |   206ms | 0.01% |  206ms |   209MiB | 0.01% |  209MiB
- pag(8,25)(3276)     |       1 |  31.5ms | 0.00% | 31.5ms |  33.4MiB | 0.00% | 33.4MiB
- pag(8,26)(378)  |       1 |  3.92ms | 0.00% | 3.92ms |  3.86MiB | 0.00% | 3.86MiB
- pag(8,27)(28)     |       1 |   272μs | 0.00% |  272μs |   294KiB | 0.00% |  294KiB
- pag(8,28)(1)    |       1 |  76.6μs | 0.00% | 76.6μs |  11.3KiB | 0.00% | 11.3KiB
+Section |    ncalls |    time |  %tot |    avg |    alloc |  %tot |     avg
+-|-|-|-|-|-|-|--------------------------------------------------------------------
+pag(9,27) |       1 |    502s | 71.3% |   502s |   676GiB | 70.9% |  676GiB
+pag(9,28) |       1 |    160s | 22.7% |   160s |   217GiB | 22.8% |  217GiB
+pag(9,29) |       1 |   42.6s | 6.05% |  42.6s |  60.0GiB | 6.29% | 60.0GiB
 
 # Summary Comparison
 
-We need at least `n=3` nodes to ask non-trivially about gossipability of a graph.  And mod some symmetry, there are `n(n-1)/2 - ceil(n(n-1)/4) + 1` classes of graphs with `n` nodes to test.
+We need at least `n=3` nodes to ask non-trivially about gossipability of a graph.  Additionally, we note that for a fully-connected graph of `n` nodes and `k=n(n-1)/2` edges, each node has `n-1` edges connected to it, so we can safely remove `n-3` of those while still guaranteeing gossipability.  Lastly, noting the symmetry in number of graphs with `k` edges vs. `n(n-1)/2 - k` edges, we conclude there are `n(n-1)/2-(n-3) - ceil(n(n-1)/4)` classes of graphs with `n` nodes to time.
 
 
-n            | 3| 4| 5| 6| 7| 8|...|150
--------------|--|--|--|--|--|--|---|-------
-cum. classes | 2| 6|12|20|31|46|...|281,348
+n            | 3| 4| 5| 6| 7| 8| 9|...|150
+-------------|--|--|--|--|--|--|--|---|-------
+cum. classes | 1| 3| 6|10|16|25|37|...|270,322
 
 
 So we can compare across iterations by computing how many classes the current iteration can achieve with each test being feasible.
 
 Iteration | Number of feasible class checks| Commit
 ----------|--------------------------------|--------
-pag1      | 28 / 281,348                   | [c7721da](https://github.com/bkaperick/Dunbar/commit/c7721da)
-pag2      | 28 / 281,348                   | [f4373b](https://github.com/bkaperick/Dunbar/commit/f4373b)
-pag3      | 37 / 281,348                   | [dbff44a](https://github.com/bkaperick/Dunbar/commit/dbff44a)
-pag4      | 44 / 281,348                   | HEAD
+pag1      | 13 / 270,322                   | [c7721da](https://github.com/bkaperick/Dunbar/commit/c7721da)
+pag2      | 13 / 270,322                   | [f4373b](https://github.com/bkaperick/Dunbar/commit/f4373b)
+pag3      | 16 / 270,322                   | [dbff44a](https://github.com/bkaperick/Dunbar/commit/dbff44a)
+pag4      | 23 / 270,322                   | [ddd3d3c](https://github.com/bkaperick/Dunbar/commit/ddd3d3c)
+pag5      | 27 / 270,322                   | HEAD
 
 Again, for the motivating application, the goal is to do these compations for `n~150`, so we include that as reference.
 

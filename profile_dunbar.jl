@@ -50,7 +50,7 @@ Profile `ProportionAreGossipable(n,k)` for all combinatorially-unique values
 of `k` with `T` trials. 
 """
 function profileMinPAG(nRange::OrdinalRange{Int64}, T)
-  proportionAreGossipable(5,7)
+  proportionAreGossipable(7,9) # make sure compiled
   to = TimerOutput()
   for n in nRange
     profileMinPAG(n,T,to)
@@ -77,8 +77,8 @@ Profile `ProportionAreGossipable(n,k)` for all combinatorially-unique values
 of `k` with `T` trials. 
 """
 function profilePAG(n::Int64, T)
+  kMax = Int64(0.5*n^2-1.5*n+2)
   kMin = Int64(ceil(n*(n-1)/4))
-  kMax = Int64(n*(n-1)/2)
   return profilePAG(n,kMax:-1:kMin,T)
 end
 
@@ -105,13 +105,11 @@ Profile `ProportionAreGossipable(n,k)` updating `to` with `T` trials.
 """
 function profilePAG(n::Int64, k::Int64, to::TimerOutput, T)
   for t=1:T
-    nP = numPaths(n,k)
-    @timeit to "pag($(n),$(k))($(nP))" proportionAreGossipable(n,k)
+    @timeit to "pag($(n),$(k))" proportionAreGossipable(n,k)
   end
 end
 
-function timerOutputToMarkdown(to::TimerOutput)
-  #table = replace(string(to), r"  ([\d\w\%])" => s"| \1")
+function timerOutputToMarkdown(to)#::TimerOutput)
   table = replace(string(to), r"([\)nsetgc\ds\%B]) " => s"\1 |")
   badHyphen = table[end]
   
@@ -119,24 +117,17 @@ function timerOutputToMarkdown(to::TimerOutput)
   table = replace(table, Regex(String([Char(9472)])) => s"-")
 
   table = split(table,"\n")[6:end]
-  table[2] = "-|-|-|-|-|-|-|-"*table[2]
+  table[2] = "--------|-------|-----|-----|----|------|-----|----"*table[2]
   table = table[1:end-1]
   return reduce(*,map(x -> x*"\n", table))
 end
-#println(profileBitItByK(32,2:2:8,1))
-#println(profileBitItByN(4,4:4:12,2))
-#println(profilePAG(5,5))
-#println(profilePAG(6,1))
 
-#using Profile
-#@time proportionAreGossipable3(6,8)
-#Profile.init(delay=0.01)
-#Profile.clear()
-#@profile @time proportionAreGossipable3(6,8)
-#
-#@time proportionAreGossipable3(5,1)
-open("Readme.md","a") do io
-  println(io,timerOutputToMarkdown(to));
-end
+# Standard benchmark used at top of Readme.
+benchmark() = profileMinPAG(7,3)
+
+# export table to readme.
+#open("Readme.md","a") do io
+#  println(io,timerOutputToMarkdown(to));
+#end
 
 
