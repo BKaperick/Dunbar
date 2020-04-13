@@ -22,13 +22,14 @@ We can see the current implementation `pag3` gives us a pretty good increase ove
 
 For general discussion, we'll consider a function as  *infeasible* if it takes longer than 300 seconds on my machine.
 
- Section   | ncalls |   time | %tot |   avg |   alloc | %tot |    avg
- ----------|--------|--------|------|-------|---------|------|-------
- pag1(7,9) |      1 |   345s |51.0% |  345s |  325GiB |49.8% | 325GiB
- pag2(7,9) |      1 |   326s |48.3% |  326s |  325GiB |49.8% | 325GiB
- pag3(7,9) |      1 |  4.74s |0.70% | 4.74s | 2.59GiB |0.40% |2.59GiB
+ Section   |  time | %tot |   alloc | %tot 
+ ----------|-------|------|---------|------
+ pag1(7,9) |  345s |50.9% |  325GiB |49.6% 
+ pag2(7,9) |  326s |48.1% |  325GiB |49.6% 
+ pag3(7,9) | 4.74s |0.70% | 2.59GiB |0.40% 
+ pag4(7,9) | 2.18s |0.32% | 2.60GiB |0.40%
 
-For computations on my laptop, we see the previous two implementations are infeasible for testing gossipability of graphs of 7 nodes.
+For computations on my laptop, we see the first two implementations are infeasible for testing gossipability of graphs of even 7 nodes.
 
 
 ## Latest Iteration
@@ -63,20 +64,24 @@ Note by symmetry that `pag(7,11)` should be approximately comparable to `pag(7,9
 
 Observe for graphs of `n=8` nodes, we reach infeasibility with `k=17` edges for the latest iteration.  The largest class of graphs to test with 8 nodes would be `k=14`, so we still cannot fully compute with 8 nodes.
 
- Section             | ncalls |   time | %tot |   avg |   alloc | %tot |    avg
- --------------------|--------|--------|------|-------|---------|------|---------
- pag(8,17)(21474180) |      1 |   368s |46.0% |  368s |  201GiB |46.1% | 201GiB
- pag(8,18)(13123110) |      1 |   230s |28.7% |  230s |  123GiB |28.3% | 123GiB
- pag(8,19)(6906900)  |      1 |   117s |14.7% |  117s | 65.3GiB |15.0% |65.3GiB
- pag(8,20)(3108105)  |      1 |  54.4s |6.79% | 54.4s | 29.7GiB |6.83% |29.7GiB
- pag(8,21)(1184040)  |      1 |  21.8s |2.73% | 21.8s | 11.5GiB |2.64% |11.5GiB
- pag(8,22)(376740)   |      1 |  6.40s |0.80% | 6.40s | 3.69GiB |0.85% |3.69GiB
- pag(8,23)(98280)    |      1 |  1.88s |0.23% | 1.88s | 0.98GiB |0.22% |0.98GiB
- pag(8,24)(20475)    |      1 |  418ms |0.05% | 418ms |  211MiB |0.05% | 211MiB
- pag(8,25)(3276)     |      1 | 61.6ms |0.01% |61.6ms | 34.1MiB |0.01% |34.1MiB
- pag(8,26)(378)      |      1 | 8.40ms |0.00% |8.40ms | 3.97MiB |0.00% |3.97MiB
- pag(8,27)(28)       |      1 | 1.25ms |0.00% |1.25ms |  309KiB |0.00% | 309KiB
- pag(8,28)(1)        |      1 |  203μs |0.00% | 203μs | 17.6KiB |0.00% |17.6KiB
+ Section |              ncalls |    time |  %tot |    avg |    alloc |  %tot |     avg
+ ------------------------------------------------------------------------------
+ pag(8,15)(37442160) |       1 |    393s | 26.6% |   393s |   373GiB | 24.3% |  373GiB
+ pag(8,14)(40116600) |       1 |    370s | 25.1% |   370s |   400GiB | 26.0% |  400GiB
+ pag(8,16)(30421755) |       1 |    287s | 19.4% |   287s |   303GiB | 19.7% |  303GiB
+ pag(8,17)(21474180) |       1 |    195s | 13.2% |   195s |   214GiB | 13.9% |  214GiB
+ pag(8,18)(13123110) |       1 |    122s | 8.29% |   122s |   131GiB | 8.51% |  131GiB
+ pag(8,19)(6906900) |        1 |   62.8s | 4.25% |  62.8s |  68.9GiB | 4.48% | 68.9GiB
+ pag(8,20)(3108105) |        1 |   30.3s | 2.05% |  30.3s |  31.0GiB | 2.01% | 31.0GiB
+ pag(8,21)(1184040) |        1 |   11.6s | 0.79% |  11.6s |  11.8GiB | 0.77% | 11.8GiB
+ pag(8,22)(376740) |         1 |   3.41s | 0.23% |  3.41s |  3.76GiB | 0.24% | 3.76GiB
+ pag(8,23)(98280) |          1 |   904ms | 0.06% |  904ms |  0.98GiB | 0.06% | 0.98GiB
+ pag(8,24)(20475) |          1 |   206ms | 0.01% |  206ms |   209MiB | 0.01% |  209MiB
+ pag(8,25)(3276) |           1 |  31.5ms | 0.00% | 31.5ms |  33.4MiB | 0.00% | 33.4MiB
+ pag(8,26)(378) |            1 |  3.92ms | 0.00% | 3.92ms |  3.86MiB | 0.00% | 3.86MiB
+ pag(8,27)(28) |             1 |   272μs | 0.00% |  272μs |   294KiB | 0.00% |  294KiB
+ pag(8,28)(1) |              1 |  76.6μs | 0.00% | 76.6μs |  11.3KiB | 0.00% | 11.3KiB
+ ------------------------------------------------------------------------------
 
 # Summary Comparison
 
@@ -94,6 +99,8 @@ Iteration | Number of feasible class checks| Commit
 ----------|--------------------------------|--------
 pag1      | 28 / 281,348                   | [c7721da](https://github.com/bkaperick/Dunbar/commit/c7721da)
 pag2      | 28 / 281,348                   | [f4373b](https://github.com/bkaperick/Dunbar/commit/f4373b)
-pag3      | 37 / 281,348                   | HEAD
+pag3      | 37 / 281,348                   | [dbff44a](https://github.com/bkaperick/Dunbar/commit/dbff44a)
+pag4      | 44 / 281,348                   | HEAD
 
 Again, for the motivating application, the goal is to do these compations for `n~150`, so we include that as reference.
+

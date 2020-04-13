@@ -1,4 +1,4 @@
-
+using LinearAlgebra
 """
     paths(b, k)
 
@@ -139,20 +139,16 @@ end
 Constructs the graph data structure from a set of string node names `nodes` and
 a set of 2-tuple relations stored in the iterable `edges`.
 """
-function initializeGraph(nodes, edges)::Dict{String, Array{String,1}}
-  graph = []
-  for node in nodes
-    outEdges = []
-    for edge in edges
-      if node == edge[1]
-        push!(outEdges,edge[2])
-      elseif node == edge[2]
-        push!(outEdges,edge[1])
-      end
-    end
-    push!(graph, (node, outEdges))
+function initializeGraph(n,bitArray)::Symmetric{Int64,Array{Int64,2}}
+  #G = Array{Int64}(undef, n, n)
+  G = zeros(Int64, n, n)
+  indexMap = []
+  for p=1:(n-1)
+    indexMap = vcat(indexMap,((p-1)*n + p + 1):(p*n))
   end
-  return Dict(graph)
+  G[indexMap] = bitArray
+  
+  return Symmetric(G,:L)
 end
 
 """
@@ -181,39 +177,26 @@ end
 
 Decides if all nodes contained in graph `G` are in a triangle.
 """
-function isGossipable(G)
-  return all([isInTriangle(G,n) for (n,es) in G])
-end
+isGossipable(G::Symmetric{Int64,Array{Int64,2}}) = !any(diag(G*G*G) .== 0)
 
 mutable struct GraphIt
   n::Int64
   k::Int64
-  nodes::Array{String,1}
-  allEdges::Array{Tuple{String,String},1}
   bitArrays::BitIt
   bitState::Tuple{Array{Bool,1},Int64}
-  start::Dict{String, Array{String,1}}
+  start::Symmetric{Int64,Array{Int64,2}}
   onemore::Bool
 end
 
 function GraphIt(n,k)
   numEdges = Int64(n*(n-1)/2)
-  nodes = [string(Char(64+x)) for x in range(1,stop=n)]
-  
-  # Build array of all possible undirected edges, length (n-1)*n/2 
-  #allEdges = Tuple{String,String}[]
-  allEdges = []
-  for (i,node) in enumerate(nodes)
-    allEdges = vcat(allEdges, [(node,m) for m in nodes[i+1:end]])
-  end
 
   # initialize bit iterator
   bi = BitIt(numEdges,k)
   bitStart,bitState = iterate(bi)
-  #bitState = (bitStart,0)
 
-  start = initializeGraph(nodes, allEdges[bitStart])
-  return GraphIt(n,k,nodes,allEdges,bi,bitState,start,false)
+  start = initializeGraph(n, bitStart)
+  return GraphIt(n,k,bi,bitState,start,false)
 end
 
 function Base.iterate(gi::GraphIt, state=(gi.start, 0))
@@ -229,12 +212,9 @@ function Base.iterate(gi::GraphIt, state=(gi.start, 0))
     return (elem, (elem,count+1))
   else gi.bitState = next[2] end
   schema = next[1]
-  
-  # get edges selected
-  currentEdges = gi.allEdges[schema]
 
   # build graph and return state
-  G = initializeGraph(gi.nodes, currentEdges)
+  G = initializeGraph(gi.n, schema)
   return (elem, (G, count + 1))
 end
 
@@ -254,6 +234,7 @@ function proportionAreGossipable(n, k)
   count = 0
   total = 0
   for G in GraphIt(n,k)
+    #println(G)
     count += isGossipable(G)
     total += 1
   end
