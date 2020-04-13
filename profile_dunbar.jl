@@ -54,20 +54,21 @@ function profileMinPAG(nRange::OrdinalRange{Int64}, T)
   proportionAreGossipable(5,7)
   to = TimerOutput()
   for n in nRange
-    profileMinPAG(n,to,T)
-    println(to)
+    profileMinPAG(n,T,to)
   end
 end
 
 """
-    profileMinPAG(n::Int64, to::TimerOutput, T::Int64)
+    profileMinPAG(n::Int64, T::Int64, to::TimerOutput)
 
 Profile `ProportionAreGossipable(n,k)` updating `to` for minimum non-trivial 
 value of `k` with `T` trials. 
 """
-function profileMinPAG(n::Int64,to::TimerOutput,T)
+function profileMinPAG(n::Int64,T,to=TimerOutput())
   kMin = Int64(ceil(1.5*(n-1)))
-  return profilePAG(n,kMin,to,T)
+  profilePAG(n,kMin,to,T)
+  println(to)
+  return to
 end
 
 """
@@ -110,6 +111,17 @@ function profilePAG(n::Int64, k::Int64, to::TimerOutput, T)
   end
 end
 
+function timerOutputToMarkdown(to::TimerOutput)
+  #table = replace(string(to), r"  ([\d\w\%])" => s"| \1")
+  table = replace(string(to), r"([\)nsetgc\ds\%B]) " => s"\1 |")
+  badHyphen = table[end]
+  
+  # replace weird hyphen with mark-down recognizable hyphen
+  table = replace(table, Regex(String([Char(9472)])) => s"-")
+
+  table = split(table,"\n")[6:end]
+  return reduce(*,map(x -> x*"\n", table))
+end
 #println(profileBitItByK(32,2:2:8,1))
 #println(profileBitItByN(4,4:4:12,2))
 #println(profilePAG(5,5))
@@ -122,6 +134,8 @@ end
 #@profile @time proportionAreGossipable3(6,8)
 #
 #@time proportionAreGossipable3(5,1)
-#open("Readme.md","a") do io
-#  println(io,profilePAG(7,3));
-#end
+open("Readme.md","a") do io
+  println(io,timerOutputToMarkdown(to));
+end
+
+
