@@ -1,38 +1,4 @@
 using LinearAlgebra
-"""
-    paths(b, k)
-
-The simple combinatorial problem of counting how many strings of `b` bits exist where
-exactly `k` are active.
-"""
-function paths(b::Int,k::Int)
-  return paths(b,k,Dict{Tuple{Int,Int},Int}())::Int
-end
-function paths(b::Int,k::Int, cache::Dict{Tuple{Int,Int},Int})::Int #, cache=Dictionary((int,int),int)
-  if (haskey(cache, (b,k)))
-    return cache[b,k]
-  elseif k > b
-    result = 0
-  elseif k == b || k == 0
-    result = 1
-  elseif k == 1
-    result = b
-  else
-    result = sum([paths(j,k-1) for j in range(k-1,stop=b-1)])
-  end
-  cache[b,k] = result
-  return result
-end
-
-"""
-    numPaths(n, k)
-
-Counts the number of graphs with `n` nodes exist with `k` edges.
-"""
-function numPaths(n::Int64,k::Int64)::Int64
-  b = Int64(n*(n-1)/2)
-  return paths(b,k)
-end
 
 mutable struct BitIt
   n::Int64 # number of bits
@@ -81,56 +47,6 @@ function Base.iterate(bi::BitIt, state=(vcat([true for _ in range(1,stop=bi.k)],
     bi.i -= 1
     return Base.iterate(bi, state)
   end
-end
-
-Base.length(bi::BitIt) = paths(bi.n, bi.k)
-
-"""
-    generateActiveBitArrays(n, k)
-
-Generates the sequential sequences of `n`-bit strings with `k` active bits
-formatted as an array of booleans
-"""
-function generateActiveBitArrays(n, k)::Array{Array{Bool,1},1}
-  return generateActiveBitArrays(n, k, Dict{Tuple{Int64,Int64},Array{Array{Bool,1},1}}())
-end
-function generateActiveBitArrays(n, k, cache::Dict{Tuple{Int64,Int64},Array{Array{Bool,1},1}})::Array{Array{Bool,1},1}
-  cache[2,1] = [[true,false],[false,true]]
-  if (haskey(cache, (n,k)))
-    result = cache[n,k]
-  elseif (n == 0)
-    result = []
-  elseif (n == 2 && k == 1)
-    result = [[true,false],[false,true]]
-  else
-    root = vcat([true for _ in range(1,stop=k)], [false for _ in range(1,stop=n-k)])
-    if (k == 0 || n == k || n == 1)
-      result = [root]
-    elseif (k > n/2)
-      result = notall(generateActiveBitArrays(n, n-k,cache))
-    else
-      inner00 = [vcat(false, inner, false) for inner in generateActiveBitArrays(n-2,k,cache)] 
-      inner01 = [vcat(false,inner,true) for inner in generateActiveBitArrays(n-2,k-1,cache)]
-      inner10 = [vcat(true, inner,false) for inner in generateActiveBitArrays(n-2,k-1,cache)]
-      val1 = vcat(inner00,inner01,inner10)
-      if (k == 1)
-        result = val1
-      else
-        inner11 = [vcat(true,inner,true) for inner in generateActiveBitArrays(n-2,k-2,cache)]
-        val2 = vcat(val1, inner11)
-        result = val2
-      end
-    end
-  end
-  cache[n,k] = result
-  return result
-end
-
-function notall(a::Array{Bool,1})
-  return [!x for x in a]
-end
-function notall(a::Array{Array{Bool, 1},1})
-  return [notall(x) for x in a]
 end
 
 """
