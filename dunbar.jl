@@ -1,10 +1,10 @@
 using LinearAlgebra
 
-mutable struct BitIt
-  n::Integer # number of bits
-  k::Integer # number of active bits (hamming weight)
-  i::Integer # current index within iteration
-  l::Integer # current active bit within iteration
+mutable struct BitIt{T<:Integer}
+  n::T # number of bits
+  k::T # number of active bits (hamming weight)
+  i::T # current index within iteration
+  l::T # current active bit within iteration
 end
 
 BitIt(num_bits::Integer,num_active::Integer) = num_bits >= num_active ? BitIt(num_bits,num_active,num_active,num_active) : throw(ArgumentError("num_active cannot be larger than num_bits"))
@@ -102,16 +102,16 @@ is_gossipable(G::Symmetric{Bool,Array{Bool,2}}) = !any(diag(G*G*G) .== 0)
 # Slightly better for small cases, but scales poorly.  Consider n=9,k=29, PAG is ~2x slower with ~16% more memory used
 #is_gossipable(G::Symmetric{Bool,Array{Bool,2}},n::Integer) = all(is_in_triangle(G,node) for node=1:n)
 
-mutable struct GraphIt
-  n::Integer
-  k::Integer
+mutable struct GraphIt{T<:Integer}
+  n::T
+  k::T
   bitarrays::BitIt
-  bitstate::Tuple{Array{Bool,1},Integer}
+  bitstate::Tuple{Array{Bool,1},T}
   start::Symmetric{Bool,Array{Bool,2}}
   onemore::Bool
 end
 
-function GraphIt(n,k)
+function GraphIt(n::Integer,k::Integer)
   numEdges = Integer(n*(n-1)/2)
 
   # initialize bit iterator
@@ -142,7 +142,7 @@ function Base.iterate(gi::GraphIt, state=(gi.start, 0))
 end
 
 """
-    proportiongossipable(n, k)
+    proportion_are_gossipable(n, k)
 
 Returns the proportion of all possible graphs with `n` nodes and `k` edges
 which are gossipable.
