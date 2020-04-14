@@ -111,8 +111,8 @@ mutable struct GraphIt{T<:Integer}
   onemore::Bool
 end
 
-function GraphIt(n::Integer,k::Integer)
-  numEdges = Integer(n*(n-1)/2)
+function GraphIt(n::T,k::T)::GraphIt{T} where T <:Integer
+  numEdges = T(n*(n-1)/2)
 
   # initialize bit iterator
   bi = BitIt(numEdges,k)
@@ -147,7 +147,7 @@ end
 Returns the proportion of all possible graphs with `n` nodes and `k` edges
 which are gossipable.
 """
-function proportion_are_gossipable(n, k)
+function proportion_are_gossipable(n, k)::AbstractFloat
   # easily-proven lower bound
   if k < 1.5*(n-1)
     println("safely ignored")
