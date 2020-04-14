@@ -1,20 +1,20 @@
-include("dunbar.jl")
+include("Dunbar.jl")
 
 # Graph tests
 n = 5
 edges = [1,1,0,0,1,0,0,1,0,1]
-G = initializeGraph(n, edges)
-@assert !isGossipable(G)
-@assert isInTriangle(G,1)
-@assert isInTriangle(G,2)
-@assert isInTriangle(G,3)
-@assert !isInTriangle(G,4)
-@assert !isInTriangle(G,5)
+G = initialize_graph(n, edges)
+@assert !is_gossipable(G)
+@assert is_in_triangle(G,1)
+@assert is_in_triangle(G,2)
+@assert is_in_triangle(G,3)
+@assert !is_in_triangle(G,4)
+@assert !is_in_triangle(G,5)
 
-@assert abs(proportionAreGossipable(3,2) - 0.0) < 1e-6
-@assert abs(proportionAreGossipable(3,3) - 1.0) < 1e-6
-@assert abs(proportionAreGossipable(6,8) - 0.08391608391608392) < 1e-6
-@assert abs(proportionAreGossipable(7,9) - 0.011193141224100976) < 1e-6
+@assert abs(proportion_are_gossipable(3,2) - 0.0) < 1e-6
+@assert abs(proportion_are_gossipable(3,3) - 1.0) < 1e-6
+@assert abs(proportion_are_gossipable(6,8) - 0.08391608391608392) < 1e-6
+@assert abs(proportion_are_gossipable(7,9) - 0.011193141224100976) < 1e-6
 
 # inclusive bounds for range of k-values that need be checked
 bounds(n) = (ceil(n*(n-1)/4),0.5*n^2 - 1.5*n+2)

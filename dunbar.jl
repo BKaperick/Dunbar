@@ -1,13 +1,13 @@
 using LinearAlgebra
 
 mutable struct BitIt
-  n::Int64 # number of bits
-  k::Int64 # number of active bits (hamming weight)
-  i::Int64 # current index within iteration
-  l::Int64 # current active bit within iteration
+  n::Integer # number of bits
+  k::Integer # number of active bits (hamming weight)
+  i::Integer # current index within iteration
+  l::Integer # current active bit within iteration
 end
 
-BitIt(numBits::Int64,numActive::Int64) = numBits >= numActive ? BitIt(numBits,numActive,numActive,numActive) : throw(ArgumentError("numActive cannot be larger than numBits"))
+BitIt(num_bits::Integer,num_active::Integer) = num_bits >= num_active ? BitIt(num_bits,num_active,num_active,num_active) : throw(ArgumentError("num_active cannot be larger than num_bits"))
 
 function Base.iterate(bi::BitIt, state=(vcat([true for _ in range(1,stop=bi.k)], [false for _ in range(1,stop=bi.n-bi.k)]), 0))
   elem,count = state
@@ -50,13 +50,12 @@ function Base.iterate(bi::BitIt, state=(vcat([true for _ in range(1,stop=bi.k)],
 end
 
 """
-    initializeGraph(nodes, edges)
+    initialize_graph(nodes, edges)
 
 Constructs the graph data structure from a set of string node names `nodes` and
 a set of 2-tuple relations stored in the iterable `edges`.
 """
-function initializeGraph(n,bitArray)::Symmetric{Bool,Array{Bool,2}}
-  #G = Array{Int64}(undef, n, n)
+function initialize_graph(n,bitArray)::Symmetric{Bool,Array{Bool,2}}
   G = zeros(Bool, n, n)
   indexMap = reduce(vcat, [((p-1)*n + p + 1):(p*n) for p in 1:(n-1)])
   G[indexMap] = bitArray 
@@ -64,13 +63,13 @@ function initializeGraph(n,bitArray)::Symmetric{Bool,Array{Bool,2}}
 end
 
 """
-    isInTriangle(graph, node)
+    is_in_triangle(graph, node)
 
 Decides if the node named `node` in `graph` is part of a triangle.  That is,
 there exists a neighbor node `m` for which `node` and `m` have a mutual, 
 distinct neighbor.
 """
-function isInTriangle(graph::Symmetric{Bool,Array{Bool,2}},node)
+function is_in_triangle(graph::Symmetric{Bool,Array{Bool,2}},node)
   edges(node) = [i for (i,n) in enumerate(graph[node,1:end]) if n]
   for e in edges(node)
     for ee in edges(e)
@@ -81,7 +80,7 @@ function isInTriangle(graph::Symmetric{Bool,Array{Bool,2}},node)
   end
   return false
 end
-function isInTriangle(graph::Array{Array{Int64,1},1},node)
+function is_in_triangle(graph::Array{Array{Integer,1},1},node)
   edges = graph[node]
   for e in graph[node]     # nbd of node
     for ee in graph[e]     # nbd of e
@@ -94,30 +93,33 @@ function isInTriangle(graph::Array{Array{Int64,1},1},node)
 end
 
 """
-    isGossipable(G)
+    is_gossipable(G)
 
 Decides if all nodes contained in graph `G` are in a triangle.
 """
-isGossipable(G::Symmetric{Bool,Array{Bool,2}}) = !any(diag(G*G*G) .== 0)
+is_gossipable(G::Symmetric{Bool,Array{Bool,2}}) = !any(diag(G*G*G) .== 0)
+
+# Slightly better for small cases, but scales poorly.  Consider n=9,k=29, PAG is ~2x slower with ~16% more memory used
+#is_gossipable(G::Symmetric{Bool,Array{Bool,2}},n::Integer) = all(is_in_triangle(G,node) for node=1:n)
 
 mutable struct GraphIt
-  n::Int64
-  k::Int64
-  bitArrays::BitIt
-  bitState::Tuple{Array{Bool,1},Int64}
+  n::Integer
+  k::Integer
+  bitarrays::BitIt
+  bitstate::Tuple{Array{Bool,1},Integer}
   start::Symmetric{Bool,Array{Bool,2}}
   onemore::Bool
 end
 
 function GraphIt(n,k)
-  numEdges = Int64(n*(n-1)/2)
+  numEdges = Integer(n*(n-1)/2)
 
   # initialize bit iterator
   bi = BitIt(numEdges,k)
-  bitStart,bitState = iterate(bi)
+  bitstart,bitstate = iterate(bi)
 
-  start = initializeGraph(n, bitStart)
-  return GraphIt(n,k,bi,bitState,start,false)
+  start = initialize_graph(n, bitstart)
+  return GraphIt(n,k,bi,bitstate,start,false)
 end
 
 function Base.iterate(gi::GraphIt, state=(gi.start, 0))
@@ -127,25 +129,25 @@ function Base.iterate(gi::GraphIt, state=(gi.start, 0))
   end
    
   # get pointers to current edges selected
-  next = iterate(gi.bitArrays, gi.bitState)
+  next = iterate(gi.bitarrays, gi.bitstate)
   if (next == nothing)
     gi.onemore = true
     return (elem, (elem,count+1))
-  else gi.bitState = next[2] end
+  else gi.bitstate = next[2] end
   schema = next[1]
 
   # build graph and return state
-  G = initializeGraph(gi.n, schema)
+  G = initialize_graph(gi.n, schema)
   return (elem, (G, count + 1))
 end
 
 """
-    proportionAreGossipable(n, k)
+    proportiongossipable(n, k)
 
 Returns the proportion of all possible graphs with `n` nodes and `k` edges
 which are gossipable.
 """
-function proportionAreGossipable(n, k)
+function proportion_are_gossipable(n, k)
   # easily-proven lower bound
   if (k < 1.5*(n-1))
     println("safely ignored")
@@ -155,10 +157,9 @@ function proportionAreGossipable(n, k)
   count = 0
   total = 0
   for G in GraphIt(n,k)
-    #println(G)
-    count += isGossipable(G)
+    count += is_gossipable(G)
     total += 1
   end
-  println(count, " / ", total)
+  #println(count, " / ", total)
   return count / total
 end

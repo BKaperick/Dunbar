@@ -1,21 +1,20 @@
 using TimerOutputs
-#using BenchmarkTools
-include("dunbar.jl")
+include("Dunbar.jl")
 
-function profileBitItByN(k::Int64, nRange, T)
+function profile_bitit_by_n(k::Int64, nrange, T)
   to = TimerOutput()
   for t=1:T
-    for n = nRange
+    for n = nrange
       @timeit to "($(n))" reduce(+,BitIt(n,k))
     end
   end
   return to
 end
 
-function profileBitItByK(n::Int64, kRange, T)
+function profile_bitit_by_k(n::Int64, krange, T)
   to = TimerOutput()
   for t=1:T
-    for k = kRange
+    for k = krange
       @timeit to "($(k))" reduce(+,BitIt(n,k))
     end
   end
@@ -23,93 +22,72 @@ function profileBitItByK(n::Int64, kRange, T)
 end
 
 """
-    profileOldPAG(n::Int64, k::Int64, T::Int64)
+    profile_min_pag(n::Int64, T::Int64)
 
-Profile old iterations of `ProportionAreGossipable(n,k)` in `old_dunbar.jl`
-with the latest in `dunbar.jl`.
-"""
-function profileOldPAG(n::Int64, k::Int64, T)
-  kMin = Int64(ceil(1.5*(n-1)))
-  to = TimerOutput()
-  #burn-in to make sure everything is compiled
-  proportionAreGossipable(5,7)
-  proportionAreGossipable2(5,7)
-  proportionAreGossipable1(5,7)
-  for t=1:T
-    @timeit to "pag1($(n),$(k))" proportionAreGossipable1(n,k)
-    @timeit to "pag2($(n),$(k))" proportionAreGossipable2(n,k)
-    @timeit to "pag3($(n),$(k))" proportionAreGossipable(n,k) # latest
-  end
-  return to
-end
-
-"""
-    profileMinPAG(n::Int64, T::Int64)
-
-Profile `ProportionAreGossipable(n,k)` for all combinatorially-unique values 
+Profile `proportion_are_gossipable(n,k)` for all combinatorially-unique values 
 of `k` with `T` trials. 
 """
-function profileMinPAG(nRange::OrdinalRange{Int64}, T)
-  proportionAreGossipable(7,9) # make sure compiled
+function profile_min_pag(nrange::OrdinalRange{Int64}, T)
+  proportion_are_gossipable(7,9) # make sure compiled
   to = TimerOutput()
-  for n in nRange
-    profileMinPAG(n,T,to)
+  for n in nrange
+    profile_min_pag(n,T,to)
   end
 end
 
 """
-    profileMinPAG(n::Int64, T::Int64, to::TimerOutput)
+    profile_min_pag(n::Int64, T::Int64, to::TimerOutput)
 
-Profile `ProportionAreGossipable(n,k)` updating `to` for minimum non-trivial 
+Profile `proportion_are_gossipable(n,k)` updating `to` for minimum non-trivial 
 value of `k` with `T` trials. 
 """
-function profileMinPAG(n::Int64,T,to=TimerOutput())
-  kMin = Int64(ceil(1.5*(n-1)))
-  profilePAG(n,kMin,to,T)
+function profile_min_pag(n::Int64,T,to=TimerOutput())
+  kmin = Int64(ceil(1.5*(n-1)))
+  profile_pag(n,kmin,to,T)
   println(to)
   return to
 end
 
 """
-    profilePAG(n::Int64, T::Int64)
+    profile_pag(n::Int64, T::Int64)
 
-Profile `ProportionAreGossipable(n,k)` for all combinatorially-unique values 
+Profile `proportion_are_gossipable(n,k)` for all combinatorially-unique values 
 of `k` with `T` trials. 
 """
-function profilePAG(n::Int64, T)
-  kMax = Int64(0.5*n^2-1.5*n+2)
-  kMin = Int64(ceil(n*(n-1)/4))
-  return profilePAG(n,kMax:-1:kMin,T)
+function profile_pag(n::Int64, T)
+  kmax = Int64(0.5*n^2-1.5*n+2)
+  kmin = Int64(ceil(n*(n-1)/4))
+  return profile_pag(n,kmax:-1:kmin,T)
 end
 
 """
-    profilePAG(n::Int64,kRange::OrdinalRange{Int64}, T::Int64)
+    profile_pag(n::Int64,krange::OrdinalRange{Int64}, T::Int64)
 
-Profile `ProportionAreGossipable(n,k)` for all values of `k` in `kRange` with 
+Profile `proportion_are_gossipable(n,k)` for all values of `k` in `krange` with 
 `T` trials. 
 """
-function profilePAG(n::Int64,kRange::OrdinalRange{Int64}, T)
-  proportionAreGossipable(5,7)
+function profile_pag(n::Int64,krange::OrdinalRange{Int64}, T)
+  proportion_are_gossipable(5,7)
   to = TimerOutput()
-  for k in kRange
-    profilePAG(n,k,to,T)
+  for k in krange
+    profile_pag(n,k,to,T)
     println(to)
   end
   return to
 end
 
 """
-    profilePAG(n::Int64, k::Int64, to::TimerOutput, T::Int64)
+    profile_pag(n::Int64, k::Int64, to::TimerOutput, T::Int64)
 
-Profile `ProportionAreGossipable(n,k)` updating `to` with `T` trials. 
+Profile `proportion_are_gossipable(n,k)` updating `to` with `T` trials. 
 """
-function profilePAG(n::Int64, k::Int64, to::TimerOutput, T)
+function profile_pag(n::Int64, k::Int64, to::TimerOutput, T)
   for t=1:T
-    @timeit to "pag($(n),$(k))" proportionAreGossipable(n,k)
+    @timeit to "pag($(n),$(k))" proportion_are_gossipable(n,k)
   end
 end
 
-function timerOutputToMarkdown(to)#::TimerOutput)
+function timeroutput_to_markdown(to)#::TimerOutput)
   table = replace(string(to), r"([\)nsetgc\ds\%B]) " => s"\1 |")
   badHyphen = table[end]
   
@@ -123,11 +101,11 @@ function timerOutputToMarkdown(to)#::TimerOutput)
 end
 
 # Standard benchmark used at top of Readme.
-benchmark() = profileMinPAG(7,3)
+benchmark() = profile_min_pag(7,3)
 
 # export table to readme.
 #open("Readme.md","a") do io
-#  println(io,timerOutputToMarkdown(to));
+#  println(io,timeroutput_to_markdown(to));
 #end
 
 
