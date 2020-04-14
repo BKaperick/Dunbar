@@ -86,6 +86,19 @@ function profile_pag(n::Int64, k::Int64, to::TimerOutput, T)
     @timeit to "pag($(n),$(k))" proportion_are_gossipable(n,k)
   end
 end
+function profile_ig(n,k)
+  to = TimerOutput()
+  return profile_ig(n,k,to)
+end
+function profile_ig(n,k,to)
+  for G in GraphIt(n,k)
+    @timeit to "graphsearch($(n),$(k))" is_gossipable1(G,n)
+    @timeit to "cutearlyred($(n),$(k))" is_gossipable2(G)
+    @timeit to "condensered($(n),$(k))" is_gossipable3(G)
+    @timeit to "fullmatmult($(n),$(k))" is_gossipable4(G)
+  end
+  return to
+end
 
 function timeroutput_to_markdown(to)#::TimerOutput)
   table = replace(string(to), r"([\)nsetgc\ds\%B]) " => s"\1 |")
@@ -102,6 +115,7 @@ end
 
 # Standard benchmark used at top of Readme.
 benchmark() = profile_min_pag(7,3)
+benchmark(n::Integer) = profile_min_pag(n,3)
 
 # export table to readme.
 #open("Readme.md","a") do io
