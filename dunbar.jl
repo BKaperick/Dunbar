@@ -14,7 +14,7 @@ function Base.iterate(bi::BitIt, state=(vcat([true for _ in range(1,stop=bi.k)],
   k,n,i,l = bi.k,bi.n,bi.i,bi.l
 
   # Base case
-  if (n == k || k == 0)
+  if n == k || k == 0
     return count == 0 ? (elem, (elem, count+1)) : nothing
   end
 
@@ -130,7 +130,7 @@ function Base.iterate(gi::GraphIt, state=(gi.start, 0))
    
   # get pointers to current edges selected
   next = iterate(gi.bitarrays, gi.bitstate)
-  if (next == nothing)
+  if next == nothing
     gi.onemore = true
     return (elem, (elem,count+1))
   else gi.bitstate = next[2] end
@@ -149,7 +149,7 @@ which are gossipable.
 """
 function proportion_are_gossipable(n, k)
   # easily-proven lower bound
-  if (k < 1.5*(n-1))
+  if k < 1.5*(n-1)
     println("safely ignored")
     return 0.0
   end
