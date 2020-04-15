@@ -63,55 +63,12 @@ function initialize_graph(n,bitArray)::Symmetric{Bool,Array{Bool,2}}
 end
 
 """
-    is_in_triangle(graph, node)
-
-Decides if the node named `node` in `graph` is part of a triangle.  That is,
-there exists a neighbor node `m` for which `node` and `m` have a mutual, 
-distinct neighbor.
-"""
-function is_in_triangle(graph::Symmetric{Bool,Array{Bool,2}},node)
-  edges(node) = [i for (i,n) in enumerate(graph[node,1:end]) if n]
-  for e in edges(node)
-    for ee in edges(e)
-      if graph[node,ee]
-        return true
-      end
-    end
-  end
-  return false
-end
-function is_in_triangle(graph::Array{Array{Integer,1},1},node)
-  edges = graph[node]
-  for e in graph[node]     # nbd of node
-    for ee in graph[e]     # nbd of e
-      if node in graph[ee] # is node in nbd of ee
-        return true
-      end
-    end
-  end
-  return false
-end
-
-"""
     is_gossipable(G)
 
 Decides if all nodes contained in graph `G` are in a triangle.
 """
-is_gossipable4(G::Symmetric{Bool,Array{Bool,2}}) = !any(diag(G*G*G) .== 0) # fullmatmult
 
-function is_gossipable2(G::Symmetric{Bool,Array{Bool,2}}) # cutearlyred
-  for row in eachrow(G)
-    if transpose(row)*G*row == 0
-      return false
-    end
-  end
-  return true
-end
-
-is_gossipable3(G::Symmetric{Bool,Array{Bool,2}}) = !all(transpose(row)*G*row == 0 for row in eachrow(G)) # condensered
-
-# Slightly better for small cases, but scales poorly.  Consider n=9,k=29, PAG is ~2x slower with ~16% more memory used
-is_gossipable1(G::Symmetric{Bool,Array{Bool,2}},n::Integer) = all(is_in_triangle(G,node) for node=1:n) # graphsearch
+is_gossipable(G::Symmetric{Bool,Array{Bool,2}}) = !all(transpose(row)*G*row == 0 for row in eachrow(G)) # condensered
 
 mutable struct GraphIt{T<:Integer}
   n::T

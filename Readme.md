@@ -37,11 +37,13 @@ For computations on my laptop, we see the first two implementations are infeasib
 
 Observe for graphs of `n=9` nodes, we reach infeasibility with `k=27` edges for the latest iteration.  The largest class of graphs to test with 9 nodes would be `k=18`, so we still cannot fully compute with 9 nodes.
 
-Section |    ncalls |    time |  %tot |    avg |    alloc |  %tot |     avg
--|-|-|-|-|-|-|--------------------------------------------------------------------
-pag(9,27) |       1 |    502s | 71.3% |   502s |   676GiB | 70.9% |  676GiB
-pag(9,28) |       1 |    160s | 22.7% |   160s |   217GiB | 22.8% |  217GiB
-pag(9,29) |       1 |   42.6s | 6.05% |  42.6s |  60.0GiB | 6.29% | 60.0GiB
+Section   |   time| %tot   |  alloc | %tot 
+----------|-------|--------|--------|-------
+pag(9,25) |   764s| 60.5%  |  797GiB| 60.8%    
+pag(9,26) |   325s| 25.7%  |  337GiB| 25.7%    
+pag(9,27) |   120s| 9.53%  |  125GiB| 9.53%    
+pag(9,28) |  43.6s| 3.45%  | 40.1GiB| 3.06%    
+pag(9,29) |  10.9s| 0.86%  | 11.1GiB| 0.84%    
 
 ## Strategies for computing `is_gossipable(G)`
 
@@ -99,7 +101,8 @@ pag1      | 13 / 270,322                   | [c7721da](https://github.com/bkaper
 pag2      | 13 / 270,322                   | [f4373b](https://github.com/bkaperick/Dunbar/commit/f4373b)
 pag3      | 16 / 270,322                   | [dbff44a](https://github.com/bkaperick/Dunbar/commit/dbff44a)
 pag4      | 23 / 270,322                   | [ddd3d3c](https://github.com/bkaperick/Dunbar/commit/ddd3d3c)
-pag5      | 27 / 270,322                   | HEAD
+pag5      | 27 / 270,322                   | [76e5731](https://github.com/bkaperick/Dunbar/commit/76e5731)
+pag5      | 28 / 270,322                   | HEAD
 
 Again, for the motivating application, the goal is to do these compations for `n~150`, so we include that as reference.
 
