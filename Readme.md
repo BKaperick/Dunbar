@@ -59,10 +59,10 @@ We test these four variations of `is_gossipable` on our standard benchmark size 
  
 Section           |  ncalls |   time |  %tot |    avg |    alloc |  %tot |     avg
 ------------------|---------|--------|-------|--------|----------|-------|-----
- fullmatmult(7,9) |    294k |  944ms | 45.0% | 3.21μs |  1.68GiB | 65.6% | 6.00KiB
- graphsearch(7,9) |    294k |  477ms | 22.7% | 1.62μs |   559MiB | 21.3% | 1.95KiB
- cutearlyred(7,9) |    294k |  381ms | 18.1% | 1.30μs |   184MiB | 7.01% |    656B
- condensered(7,9) |    294k |  297ms | 14.2% | 1.01μs |   161MiB | 6.13% |    574B
+ fullmatmult(7,9) |    294k |  1.06s | 42.7% | 3.61μs |  1.68GiB | 64.4% | 6.00KiB
+ graphsearch(7,9) |    294k |  584ms | 23.5% | 1.99μs |   559MiB | 20.9% | 1.95KiB
+ condensered(7,9) |    294k |  421ms | 16.9% | 1.43μs |   211MiB | 7.88% |    752B
+ cutearlyred(7,9) |    294k |  419ms | 16.9% | 1.42μs |   184MiB | 6.88% |    656B
 
 We immediately see the `fullmatmult` approach lags behind in both memory and time compared to even the `graphsearch` approach.  Of course, it is important to keep in mind that the size of the adjacency matrix is a paltry `7x7`, and the size of our problems of interest will never exceed O(100), so computing `G^3` multiple times is not as ridiculous as it may initially sound.
 
@@ -70,16 +70,14 @@ Before drawing any conclusions, it is certainly worth more at least a slightly l
 
  Section           |  ncalls |   time |  %tot |    avg |    alloc |  %tot |     avg
 -------------------|---------|--------|-------|--------|----------|-------|----
- graphsearch(8,16) |   30.4M |   143s | 35.3% | 4.71μs |   154GiB | 38.8% | 5.32KiB
- cutearlyred(8,16) |   30.4M |   121s | 29.9% | 3.99μs |  51.3GiB | 12.9% | 1.77KiB
- fullmatmult(8,16) |   30.4M |   118s | 29.2% | 3.89μs |   182GiB | 45.6% | 6.27KiB
- condensered(8,16) |   30.4M |  22.6s | 5.57% |  743ns |  10.8GiB | 2.72% |    382B
+ graphsearch(8,16) |   30.4M |   150s | 29.0% | 4.93μs |   154GiB | 35.0% | 5.32KiB
+ cutearlyred(8,16) |   30.4M |   123s | 23.8% | 4.04μs |  51.3GiB | 11.6% | 1.77KiB
+ condensered(8,16) |   30.4M |   123s | 23.8% | 4.04μs |  54.0GiB | 12.2% | 1.86KiB
+ fullmatmult(8,16) |   30.4M |   121s | 23.4% | 3.98μs |   182GiB | 41.2% | 6.27KiB
 
 In this test, each `is_gossipable` call is made ~103x more, `G` is now 8x8, and sparsity ~25% as opposed to ~36% in the previous example.  Sparsity considerations of G is something we expect could be of value as we scale the code further.
 
-We see this time that although `cutearlyred` maintains a dramatically smaller amount of allocated memory than `graphsearch` and `fullmatmult`, but is slightly slower than `fullmatmult` this time.  The explicit for-loop of `cutearlyred` appears to be scaling poorly.  Meanwhile, `condensered` is really a best-of-both-worlds combination of those two strategies, resulting in significantly better performance than all the rest on both these measures.
-
-We will use `condensered` as the basis for `is_gossipable` going forward, updating benchmarks and moving other implementations to `old_dunbar.jl` in the next commit.
+We can see here that all except `graphsearch` perform similarly.  The caveat of `fullmatmult` still requiring much more memory allocated.  For now, we can remove `graphsearch` and `condensered`.  Going forward, we can use `cutearlyred` as the primary strategy for `is_gossipable`, while keeping an open mind for future optimizations of `fullmatmult` on larger, sparse cases which could avoid the allocation issues or exploit other optimizations.
 
 # Summary Comparison
 
