@@ -33,7 +33,7 @@ For general discussion, we'll consider a function as  *infeasible* if it takes l
 For computations on my laptop, we see the first two implementations are infeasible for testing gossipability of graphs of even 7 nodes.
 
 
-## Latest Iteration
+## Latest Iteration if `proportion_are_gossipable(n,k)
 
 Observe for graphs of `n=9` nodes, we reach infeasibility with `k=27` edges for the latest iteration.  The largest class of graphs to test with 9 nodes would be `k=18`, so we still cannot fully compute with 9 nodes.
 
@@ -42,6 +42,44 @@ Section |    ncalls |    time |  %tot |    avg |    alloc |  %tot |     avg
 pag(9,27) |       1 |    502s | 71.3% |   502s |   676GiB | 70.9% |  676GiB
 pag(9,28) |       1 |    160s | 22.7% |   160s |   217GiB | 22.8% |  217GiB
 pag(9,29) |       1 |   42.6s | 6.05% |  42.6s |  60.0GiB | 6.29% | 60.0GiB
+
+## Strategies for computing `is_gossipable(G)`
+
+The two main bottlenecks are: 
+1. `GraphIt(n,k)` -- Generation of all the graphs for a given number of nodes `n` and number of edges `k`.   
+2. `is_gossipable(G)` -- Test for whether a given graph is gossipable.
+
+We have four strategies for computing `is_gossipable(G)`:
+1. `graphsearch` -- The initial implementation, performing an explicit search in the neighborhood of length 2 from each node to ensure itself was a neighbor of a distinct node two connections away (i.e., a path of length 3 exists from each node to itself, forming a triangle).
+2. `fullmatmult` -- A more sophisticated approach, with the overhaul of the encoding of `G` to an adjacency matrix representation, we note the i^th diagonal of `G^3` counts the number of paths of length 3 from node `i` to itself.  This method explicitly computes `G^3` and checks if any of its diagonals are 0.
+3. `cutearlyred` -- An attempted improvement on #2, we note the `i^th` diagonal of G^3 is in fact equal to `g_i^TGg_i`, where `g_i` is the `i^th` row (or column, in our case of undirected graphs, the adjacency matrix is symmetric).  We loop through the diagonals immediately returning false once one of these values is zero, hoping cut out some unnecessary iterations.
+4. `condensered` -- Another variation on #2 with the same formulation as #3, but this time with a more condense iteration.  We lose the explicit iteration reduction, but I suspect that that kind of optimization and more is able to be done under the hood by removing the for loop (usually a safe strategy for easy speed ups for this type of operation). 
+
+We test these four variations of `is_gossipable` on our standard benchmark size of `n=7` and `k=9`.
+ 
+Section           |  ncalls |   time |  %tot |    avg |    alloc |  %tot |     avg
+------------------|---------|--------|-------|--------|----------|-------|-----
+ fullmatmult(7,9) |    294k |  944ms | 45.0% | 3.21μs |  1.68GiB | 65.6% | 6.00KiB
+ graphsearch(7,9) |    294k |  477ms | 22.7% | 1.62μs |   559MiB | 21.3% | 1.95KiB
+ cutearlyred(7,9) |    294k |  381ms | 18.1% | 1.30μs |   184MiB | 7.01% |    656B
+ condensered(7,9) |    294k |  297ms | 14.2% | 1.01μs |   161MiB | 6.13% |    574B
+
+We immediately see the `fullmatmult` approach lags behind in both memory and time compared to even the `graphsearch` approach.  Of course, it is important to keep in mind that the size of the adjacency matrix is a paltry `7x7`, and the size of our problems of interest will never exceed O(100), so computing `G^3` multiple times is not as ridiculous as it may initially sound.
+
+Before drawing any conclusions, it is certainly worth more at least a slightly larger test. 
+
+ Section           |  ncalls |   time |  %tot |    avg |    alloc |  %tot |     avg
+-------------------|---------|--------|-------|--------|----------|-------|----
+ graphsearch(8,16) |   30.4M |   143s | 35.3% | 4.71μs |   154GiB | 38.8% | 5.32KiB
+ cutearlyred(8,16) |   30.4M |   121s | 29.9% | 3.99μs |  51.3GiB | 12.9% | 1.77KiB
+ fullmatmult(8,16) |   30.4M |   118s | 29.2% | 3.89μs |   182GiB | 45.6% | 6.27KiB
+ condensered(8,16) |   30.4M |  22.6s | 5.57% |  743ns |  10.8GiB | 2.72% |    382B
+
+In this test, each `is_gossipable` call is made ~103x more, `G` is now 8x8, and sparsity ~25% as opposed to ~36% in the previous example.  Sparsity considerations of G is something we expect could be of value as we scale the code further.
+
+We see this time that although `cutearlyred` maintains a dramatically smaller amount of allocated memory than `graphsearch` and `fullmatmult`, but is slightly slower than `fullmatmult` this time.  The explicit for-loop of `cutearlyred` appears to be scaling poorly.  Meanwhile, `condensered` is really a best-of-both-worlds combination of those two strategies, resulting in significantly better performance than all the rest on both these measures.
+
+We will use `condensered` as the basis for `is_gossipable` going forward, updating benchmarks and moving other implementations to `old_dunbar.jl` in the next commit.
 
 # Summary Comparison
 
@@ -64,4 +102,6 @@ pag4      | 23 / 270,322                   | [ddd3d3c](https://github.com/bkaper
 pag5      | 27 / 270,322                   | HEAD
 
 Again, for the motivating application, the goal is to do these compations for `n~150`, so we include that as reference.
+
+
 

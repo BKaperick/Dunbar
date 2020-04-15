@@ -97,8 +97,9 @@ end
 
 Decides if all nodes contained in graph `G` are in a triangle.
 """
-is_gossipable4(G::Symmetric{Bool,Array{Bool,2}}) = !any(diag(G*G*G) .== 0)
-function is_gossipable2(G::Symmetric{Bool,Array{Bool,2}}) 
+is_gossipable4(G::Symmetric{Bool,Array{Bool,2}}) = !any(diag(G*G*G) .== 0) # fullmatmult
+
+function is_gossipable2(G::Symmetric{Bool,Array{Bool,2}}) # cutearlyred
   for row in eachrow(G)
     if transpose(row)*G*row == 0
       return false
@@ -106,10 +107,11 @@ function is_gossipable2(G::Symmetric{Bool,Array{Bool,2}})
   end
   return true
 end
-is_gossipable3(G::Symmetric{Bool,Array{Bool,2}}) = !all(transpose(row)*G*row == 0 for row in eachrow(G))
+
+is_gossipable3(G::Symmetric{Bool,Array{Bool,2}}) = !all(transpose(row)*G*row == 0 for row in eachrow(G)) # condensered
 
 # Slightly better for small cases, but scales poorly.  Consider n=9,k=29, PAG is ~2x slower with ~16% more memory used
-is_gossipable1(G::Symmetric{Bool,Array{Bool,2}},n::Integer) = all(is_in_triangle(G,node) for node=1:n)
+is_gossipable1(G::Symmetric{Bool,Array{Bool,2}},n::Integer) = all(is_in_triangle(G,node) for node=1:n) # graphsearch
 
 mutable struct GraphIt{T<:Integer}
   n::T
@@ -166,7 +168,7 @@ function proportion_are_gossipable(n, k)::AbstractFloat
   count = 0
   total = 0
   for G in GraphIt(n,k)
-    count += is_gossipable(G)
+    count += is_gossipable3(G)
     total += 1
   end
   #println(count, " / ", total)
