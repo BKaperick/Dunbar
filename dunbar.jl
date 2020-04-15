@@ -55,8 +55,8 @@ end
 Constructs the graph data structure from a set of string node names `nodes` and
 a set of 2-tuple relations stored in the iterable `edges`.
 """
-function initialize_graph(n,bitArray)::Symmetric{Bool,Array{Bool,2}}
-  G = zeros(Bool, n, n)
+function initialize_graph(n,bitArray)::Symmetric{Int8,Array{Int8,2}}
+  G = zeros(Int8, n, n)
   indexMap = reduce(vcat, [((p-1)*n + p + 1):(p*n) for p in 1:(n-1)])
   G[indexMap] = bitArray 
   return Symmetric(G,:L)
@@ -97,9 +97,9 @@ end
 
 Decides if all nodes contained in graph `G` are in a triangle.
 """
-is_gossipable_old(G::Symmetric{Bool,Array{Bool,2}}) = !any(diag(G*G*G) .== 0) # fullmatmult
+is_gossipable_old(G::Symmetric{Int8,Array{Int8,2}}) = !any(diag(G*G*G) .== 0) # fullmatmult
 
-function is_gossipable(G::Symmetric{Bool,Array{Bool,2}}) # cutearlyred
+function is_gossipable(G::Symmetric{Int8,Array{Int8,2}}) # cutearlyred
   for row in eachrow(G)
     if transpose(row)*G*row == 0
       return false
@@ -108,16 +108,16 @@ function is_gossipable(G::Symmetric{Bool,Array{Bool,2}}) # cutearlyred
   return true
 end
 
-mutable struct GraphIt{T<:Integer}
+mutable struct GraphIt{T<:Int8}
   n::T
   k::T
   bitarrays::BitIt
-  bitstate::Tuple{Array{Bool,1},T}
-  start::Symmetric{Bool,Array{Bool,2}}
+  bitstate::Tuple{Array{Bool,1},Integer}
+  start::Symmetric{T,Array{T,2}}
   onemore::Bool
 end
 
-function GraphIt(n::T,k::T)::GraphIt{T} where T <:Integer
+function GraphIt(n::T,k::T)::GraphIt{T} where T <:Int8
   numEdges = T(n*(n-1)/2)
 
   # initialize bit iterator
@@ -153,7 +153,7 @@ end
 Returns the proportion of all possible graphs with `n` nodes and `k` edges
 which are gossipable.
 """
-function proportion_are_gossipable(n, k)::AbstractFloat
+function proportion_are_gossipable(n::Int8, k::Int8)::AbstractFloat
   # easily-proven lower bound
   if k < 1.5*(n-1)
     println("safely ignored")
