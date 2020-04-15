@@ -68,7 +68,7 @@ end
 Decides if all nodes contained in graph `G` are in a triangle.
 """
 
-is_gossipable(G::Symmetric{Bool,Array{Bool,2}}) = !all(transpose(row)*G*row == 0 for row in eachrow(G)) # condensered
+is_gossipable(G::Symmetric{Bool,Array{Bool,2}}) = !any(transpose(row)*G*row == 0 for row in eachrow(G)) # condensered
 
 mutable struct GraphIt{T<:Integer}
   n::T
@@ -125,7 +125,7 @@ function proportion_are_gossipable(n, k)::AbstractFloat
   count = 0
   total = 0
   for G in GraphIt(n,k)
-    count += is_gossipable3(G)
+    count += is_gossipable(G)
     total += 1
   end
   #println(count, " / ", total)
