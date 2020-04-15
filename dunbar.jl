@@ -108,7 +108,7 @@ function is_gossipable2(G::Symmetric{Bool,Array{Bool,2}}) # cutearlyred
   return true
 end
 
-is_gossipable3(G::Symmetric{Bool,Array{Bool,2}}) = !all(transpose(row)*G*row == 0 for row in eachrow(G)) # condensered
+is_gossipable3(G::Symmetric{Bool,Array{Bool,2}}) = !any(transpose(row)*G*row == 0 for row in eachrow(G)) # condensered
 
 # Slightly better for small cases, but scales poorly.  Consider n=9,k=29, PAG is ~2x slower with ~16% more memory used
 is_gossipable1(G::Symmetric{Bool,Array{Bool,2}},n::Integer) = all(is_in_triangle(G,node) for node=1:n) # graphsearch
