@@ -29,7 +29,7 @@ For general discussion, we'll consider a function as  *infeasible* if it takes l
  pag3(7,9) | 4.74s | 2.59GiB 
  pag4(7,9) | 2.18s | 2.60GiB 
  pag5(7,9) | 1.24s | 1.91GiB
- pag6(7,9) | 598ms |  449MiB
+ pag6(7,9) | 442ms |  335MiB
 
 For computations on my laptop, we see the first two implementations are infeasible for testing gossipability of graphs of even 7 nodes.
 
@@ -38,11 +38,11 @@ For computations on my laptop, we see the first two implementations are infeasib
 
 Observe for graphs of `n=9` nodes, we reach infeasibility with `k=27` edges for the latest iteration.  The largest class of graphs to test with 9 nodes would be `k=18`, so we still cannot fully compute with 9 nodes.
 
-Section   |  time |  %tot |   alloc |  %tot 
-----------|-------|---|---|-----|------|----------
-pag(9,27) |  690s | 70.1% |  318GiB | 70.9% 
-pag(9,28) |  231s | 23.5% | 102GiB  | 22.8% 
-pag(9,29) | 63.1s | 63.1% | 28.2GiB | 6.29% 
+Section | time | %tot | alloc | %tot 
+----------|-------|-------|---------|------------
+pag(9,27) | 601s | 70.6% | 205GiB | 70.9% 
+pag(9,28) | 192s | 22.6% | 65.8GiB | 22.8% 
+pag(9,29) | 57.4s | 6.75% | 18.2GiB | 6.29%
 
 ## Strategies for computing `is_gossipable(G)`
 
@@ -99,7 +99,7 @@ pag2      | 13 / 270,322                   | [f4373b](https://github.com/bkaperi
 pag3      | 16 / 270,322                   | [dbff44a](https://github.com/bkaperick/Dunbar/commit/dbff44a)
 pag4      | 23 / 270,322                   | [ddd3d3c](https://github.com/bkaperick/Dunbar/commit/ddd3d3c)
 pag5      | 27 / 270,322                   | [76e5731](https://github.com/bkaperick/Dunbar/commit/76e5731)
-pag6      | 28 / 270,322                   | HEAD
+pag6      | 27 / 270,322                   | HEAD
 
 Again, for the motivating application, the goal is to do these compations for `n~150`, so we include that as reference.
 
