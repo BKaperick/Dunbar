@@ -29,6 +29,7 @@ For general discussion, we'll consider a function as  *infeasible* if it takes l
  pag3(7,9) | 4.74s | 2.59GiB 
  pag4(7,9) | 2.18s | 2.60GiB 
  pag5(7,9) | 1.24s | 1.91GiB
+ pag6(7,9) | 598ms |  449MiB
 
 For computations on my laptop, we see the first two implementations are infeasible for testing gossipability of graphs of even 7 nodes.
 
@@ -37,11 +38,11 @@ For computations on my laptop, we see the first two implementations are infeasib
 
 Observe for graphs of `n=9` nodes, we reach infeasibility with `k=27` edges for the latest iteration.  The largest class of graphs to test with 9 nodes would be `k=18`, so we still cannot fully compute with 9 nodes.
 
-Section |    ncalls |    time |  %tot |    avg |    alloc |  %tot |     avg
--|-|-|-|-|-|-|--------------------------------------------------------------------
-pag(9,27) |       1 |    502s | 71.3% |   502s |   676GiB | 70.9% |  676GiB
-pag(9,28) |       1 |    160s | 22.7% |   160s |   217GiB | 22.8% |  217GiB
-pag(9,29) |       1 |   42.6s | 6.05% |  42.6s |  60.0GiB | 6.29% | 60.0GiB
+Section   |  time |  %tot |   alloc |  %tot 
+----------|-------|---|---|-----|------|----------
+pag(9,27) |  690s | 70.1% |  318GiB | 70.9% 
+pag(9,28) |  231s | 23.5% | 102GiB  | 22.8% 
+pag(9,29) | 63.1s | 63.1% | 28.2GiB | 6.29% 
 
 ## Strategies for computing `is_gossipable(G)`
 
