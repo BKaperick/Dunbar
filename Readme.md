@@ -29,6 +29,7 @@ For general discussion, we'll consider a function as  *infeasible* if it takes l
  pag3(7,9) | 4.74s | 2.59GiB 
  pag4(7,9) | 2.18s | 2.60GiB 
  pag5(7,9) | 1.24s | 1.91GiB
+ pag6(7,9) | 456ms |  399MiB
 
 For computations on my laptop, we see the first two implementations are infeasible for testing gossipability of graphs of even 7 nodes.
 
@@ -102,7 +103,7 @@ pag2      | 13 / 270,322                   | [f4373b](https://github.com/bkaperi
 pag3      | 16 / 270,322                   | [dbff44a](https://github.com/bkaperick/Dunbar/commit/dbff44a)
 pag4      | 23 / 270,322                   | [ddd3d3c](https://github.com/bkaperick/Dunbar/commit/ddd3d3c)
 pag5      | 27 / 270,322                   | [76e5731](https://github.com/bkaperick/Dunbar/commit/76e5731)
-pag5      | 28 / 270,322                   | HEAD
+pag6      | 28 / 270,322                   | HEAD
 
 Again, for the motivating application, the goal is to do these compations for `n~150`, so we include that as reference.
 
