@@ -55,11 +55,41 @@ end
 Constructs the graph data structure from a set of string node names `nodes` and
 a set of 2-tuple relations stored in the iterable `edges`.
 """
-function initialize_graph(n,bitArray)::Symmetric{Bool,Array{Bool,2}}
-  G = zeros(Bool, n, n)
+function initialize_graph(n::T,bitArray::Array{Bool,1})::Symmetric{T,Array{T,2}} where T<:Integer
+  G = zeros(typeof(n), n, n)
   indexMap = reduce(vcat, [((p-1)*n + p + 1):(p*n) for p in 1:(n-1)])
   G[indexMap] = bitArray 
   return Symmetric(G,:L)
+end
+
+"""
+    is_in_triangle(graph, node)
+
+Decides if the node named `node` in `graph` is part of a triangle.  That is,
+there exists a neighbor node `m` for which `node` and `m` have a mutual, 
+distinct neighbor.
+"""
+function is_in_triangle(graph::Symmetric{Integer,Array{Integer,2}},node::Integer)
+  edges(node) = [i for (i,n) in enumerate(graph[node,1:end]) if n]
+  for e in edges(node)
+    for ee in edges(e)
+      if graph[node,ee]
+        return true
+      end
+    end
+  end
+  return false
+end
+function is_in_triangle(graph::Array{Array{Integer,1},1},node)
+  edges = graph[node]
+  for e in graph[node]     # nbd of node
+    for ee in graph[e]     # nbd of e
+      if node in graph[ee] # is node in nbd of ee
+        return true
+      end
+    end
+  end
+  return false
 end
 
 """
@@ -67,15 +97,23 @@ end
 
 Decides if all nodes contained in graph `G` are in a triangle.
 """
+is_gossipable_old(G::Symmetric{T,Array{T,2}}) where T<: Integer = !any(diag(G*G*G) .== zero(T))  # fullmatmult
 
-is_gossipable(G::Symmetric{Bool,Array{Bool,2}}) = !any(transpose(row)*G*row == 0 for row in eachrow(G)) # condensered
+function is_gossipable(G::Symmetric{T,Array{T,2}}) where T<: Integer # cutearlyred
+  for row in eachrow(G)
+    if transpose(row)*G*row == zero(T)
+      return false
+    end
+  end
+  return true
+end
 
 mutable struct GraphIt{T<:Integer}
   n::T
   k::T
   bitarrays::BitIt
-  bitstate::Tuple{Array{Bool,1},T}
-  start::Symmetric{Bool,Array{Bool,2}}
+  bitstate::Tuple{Array{Bool,1},Int64} # these iteration counts get large
+  start::Symmetric{T,Array{T,2}}
   onemore::Bool
 end
 
@@ -115,7 +153,7 @@ end
 Returns the proportion of all possible graphs with `n` nodes and `k` edges
 which are gossipable.
 """
-function proportion_are_gossipable(n, k)::AbstractFloat
+function proportion_are_gossipable(n::Integer, k::Integer)::AbstractFloat
   # easily-proven lower bound
   if k < 1.5*(n-1)
     println("safely ignored")
