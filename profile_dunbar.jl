@@ -22,7 +22,7 @@ function profile_bitit_by_k(n::Integer, krange, trials)
 end
 
 """
-    profile_min_pag(n::Int64, T::Int64)
+    profile_min_pag(n::Integer, T::Integer)
 
 Profile `proportion_are_gossipable(n,k)` for all combinatorially-unique values 
 of `k` with `T` trials. 
@@ -36,7 +36,7 @@ function profile_min_pag(nrange::OrdinalRange{Integer}, trials)
 end
 
 """
-    profile_min_pag(n::Int64, T::Int64, to::TimerOutput)
+    profile_min_pag(n::Integer, T::Integer, to::TimerOutput)
 
 Profile `proportion_are_gossipable(n,k)` updating `to` for minimum non-trivial 
 value of `k` with `T` trials. 
@@ -49,7 +49,7 @@ function profile_min_pag(n::T,trials,to=TimerOutput()) where T<:Integer
 end
 
 """
-    profile_pag(n::Int64, T::Int64)
+    profile_pag(n::Integer, T::Integer)
 
 Profile `proportion_are_gossipable(n,k)` for all combinatorially-unique values 
 of `k` with `T` trials. 
@@ -57,17 +57,17 @@ of `k` with `T` trials.
 function profile_pag(n::T, trials) where T<:Integer
   kmax = T(0.5*n^2-1.5*n+2)
   kmin = T(ceil(n*(n-1)/4))
-  return profile_pag(n,kmax:Int8(-1):kmin,trials)
+  return profile_pag(n,kmax:-one(T):kmin,trials)
 end
 
 """
-    profile_pag(n::Int64,krange::OrdinalRange{Int64}, T::Int64)
+    profile_pag(n::Integer,krange::OrdinalRange{Integer}, T::Integer)
 
 Profile `proportion_are_gossipable(n,k)` for all values of `k` in `krange` with 
 `T` trials. 
 """
-function profile_pag(n::Int64,krange::OrdinalRange{Int64}, trials)
-  proportion_are_gossipable(5,7)
+function profile_pag(n::T,krange::OrdinalRange{T}, trials) where T<:Integer
+  @time proportion_are_gossipable(T(5),T(7))
   to = TimerOutput()
   for k in krange
     profile_pag(n,k,to,trials)
@@ -77,7 +77,7 @@ function profile_pag(n::Int64,krange::OrdinalRange{Int64}, trials)
 end
 
 """
-    profile_pag(n::Int64, k::Int64, to::TimerOutput, T::Int64)
+    profile_pag(n::Integer, k::Integer, to::TimerOutput, T::Integer)
 
 Profile `proportion_are_gossipable(n,k)` updating `to` with `T` trials. 
 """
@@ -100,7 +100,7 @@ function profile_ig(n,k,to)
   return to
 end
 
-function timeroutput_to_markdown(to)#::TimerOutput)
+function timeroutput_to_markdown(to)
   table = replace(string(to), r"([\)nsetgc\ds\%B]) " => s"\1 |")
   badHyphen = table[end]
   
@@ -114,8 +114,8 @@ function timeroutput_to_markdown(to)#::TimerOutput)
 end
 
 # Standard benchmark used at top of Readme.
-benchmark() = profile_min_pag(Int8(7),Int8(3))
-benchmark(n::Int8) = profile_min_pag(n,Int8(3))
+benchmark() = profile_min_pag(Int8(7),3)
+benchmark(n::Int8) = profile_min_pag(n,3)
 
 # export table to readme.
 #open("Readme.md","a") do io
