@@ -49,6 +49,13 @@ function Base.iterate(bi::BitIt, state=(vcat([true for _ in range(1,stop=bi.k)],
   end
 end
 
+function rand_bit_it(n,k)
+  b = Integer(n*(n-1)/2)
+  bits = zeros(Bool,b);
+  bits[rand(1:b,k)] .= true
+  return bits;
+end
+
 """
     initialize_graph(nodes, edges)
 
@@ -147,6 +154,10 @@ function Base.iterate(gi::GraphIt, state=(gi.start, 0))
   return (elem, (G, count + 1))
 end
 
+function rand_graph(n,k)
+  bits = rand_bit_it(n,k)
+  return initialize_graph(n,bits)
+end
 """
     proportion_are_gossipable(n, k)
 
@@ -168,4 +179,20 @@ function proportion_are_gossipable(n::Integer, k::Integer)::AbstractFloat
   end
   #println(count, " / ", total)
   return count / total
+end
+
+function proportion_are_gossipable(n::Integer, k::Integer, sample::Integer)::AbstractFloat
+  # easily-proven lower bound
+  if k < 1.5*(n-1)
+    println("safely ignored")
+    return 0.0
+  end
+
+  count = 0
+  for s=1:sample
+    G = rand_graph(n,k)
+    count += is_gossipable(G)
+  end
+  #println(count, " / ", total)
+  return count / sample
 end
