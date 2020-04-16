@@ -64,6 +64,9 @@ a set of 2-tuple relations stored in the iterable `edges`.
 """
 function initialize_graph(n::T,bitArray::Array{Bool,1})::Symmetric{T,Array{T,2}} where T<:Integer
   G = zeros(typeof(n), n, n)
+  return initialize_graph!(G,n,bitArray)
+end
+function initialize_graph!(G::Array{T,2},n::T,bitArray::Array{Bool,1})::Symmetric{T,Array{T,2}} where T<:Integer
   indexMap = reduce(vcat, [((p-1)*n + p + 1):(p*n) for p in 1:(n-1)])
   G[indexMap] = bitArray 
   return Symmetric(G,:L)
@@ -121,6 +124,7 @@ mutable struct GraphIt{T<:Integer}
   bitarrays::BitIt
   bitstate::Tuple{Array{Bool,1},Int64} # these iteration counts get large
   start::Symmetric{T,Array{T,2}}
+  prealloc_g::Array{T,2}
   onemore::Bool
 end
 
@@ -130,9 +134,9 @@ function GraphIt(n::T,k::T)::GraphIt{T} where T <:Integer
   # initialize bit iterator
   bi = BitIt(numEdges,k)
   bitstart,bitstate = iterate(bi)
-
-  start = initialize_graph(n, bitstart)
-  return GraphIt(n,k,bi,bitstate,start,false)
+  prealloc_g = zeros(T,n,n)
+  start = initialize_graph!(prealloc_g,n, bitstart)
+  return GraphIt(n,k,bi,bitstate,start,prealloc_g,false)
 end
 
 function Base.iterate(gi::GraphIt, state=(gi.start, 0))
@@ -150,7 +154,7 @@ function Base.iterate(gi::GraphIt, state=(gi.start, 0))
   schema = next[1]
 
   # build graph and return state
-  G = initialize_graph(gi.n, schema)
+  G = initialize_graph!(gi.prealloc_g,gi.n, schema)
   return (elem, (G, count + 1))
 end
 
