@@ -16,6 +16,14 @@ G = initialize_graph(n, edges)
 @assert abs(proportion_are_gossipable(6,8) - 0.08391608391608392) < 1e-6
 @assert abs(proportion_are_gossipable(7,9) - 0.011193141224100976) < 1e-6
 
+Giter = GraphIt(4,3)
+G,next = iterate(Giter)
+@assert G == [0 1 1 1;1 0 0 0;1 0 0 0;1 0 0 0]
+G,next = iterate(Giter,next)
+@assert G == [0 1 1 0;1 0 1 0;1 1 0 0;0 0 0 0]
+G,next = iterate(Giter,next)
+@assert G == [0 1 1 0;1 0 0 1;1 0 0 0;0 1 0 0]
+
 # inclusive bounds for range of k-values that need be checked
 bounds(n) = (ceil(n*(n-1)/4),0.5*n^2 - 1.5*n+2)
 bsize(n) = bounds(n)[2] - bounds(n)[1]+1

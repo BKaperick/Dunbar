@@ -62,14 +62,15 @@ end
 Constructs the graph data structure from a set of string node names `nodes` and
 a set of 2-tuple relations stored in the iterable `edges`.
 """
-function initialize_graph(n::T,bitArray::Array{Bool,1})::Symmetric{T,Array{T,2}} where T<:Integer
+function initialize_graph(n::T,bitArray::Array{Bool,1})::Array{T,2} where T<:Integer
   G = zeros(typeof(n), n, n)
-  return initialize_graph!(G,n,bitArray)
+  return initialize_graph(G,n,bitArray)
 end
-function initialize_graph!(G::Array{T,2},n::T,bitArray::Array{Bool,1})::Symmetric{T,Array{T,2}} where T<:Integer
-  indexMap = reduce(vcat, [((p-1)*n + p + 1):(p*n) for p in 1:(n-1)])
+function initialize_graph(G::Array{T,2},n::T,bitArray::Array{Bool,1}) where T<:Integer
+  fill!(G, zero(T))
+  indexMap = reduce(vcat, [((p-1)*n + p + 1):(p*n) for p in 1:(n-1)]) # TODO: can cache this
   G[indexMap] = bitArray 
-  return Symmetric(G,:L)
+  return G + transpose(G)
 end
 
 """
@@ -109,7 +110,7 @@ Decides if all nodes contained in graph `G` are in a triangle.
 """
 is_gossipable_old(G::Symmetric{T,Array{T,2}}) where T<: Integer = !any(diag(G*G*G) .== zero(T))  # fullmatmult
 
-function is_gossipable(G::Symmetric{T,Array{T,2}}) where T<: Integer # cutearlyred
+function is_gossipable(G::Array{T,2}) where T<: Integer # cutearlyred
   for row in eachrow(G)
     if transpose(row)*G*row == zero(T)
       return false
@@ -123,9 +124,9 @@ mutable struct GraphIt{T<:Integer}
   k::T
   bitarrays::BitIt
   bitstate::Tuple{Array{Bool,1},Int64} # these iteration counts get large
-  start::Symmetric{T,Array{T,2}}
-  prealloc_g::Array{T,2}
-  onemore::Bool
+  start::Array{T,2}
+  g_odd::Array{T,2}
+  g_even::Array{T,2}
 end
 
 function GraphIt(n::T,k::T)::GraphIt{T} where T <:Integer
@@ -134,28 +135,34 @@ function GraphIt(n::T,k::T)::GraphIt{T} where T <:Integer
   # initialize bit iterator
   bi = BitIt(numEdges,k)
   bitstart,bitstate = iterate(bi)
-  prealloc_g = zeros(T,n,n)
-  start = initialize_graph!(prealloc_g,n, bitstart)
-  return GraphIt(n,k,bi,bitstate,start,prealloc_g,false)
+  start = zeros(T,n,n)
+  start = initialize_graph(start,n, bitstart)
+  g_odd = zeros(T,n,n)
+  g_even = zeros(T,n,n)
+  return GraphIt(n,k,bi,bitstate,start,g_odd,g_even)
 end
 
 function Base.iterate(gi::GraphIt, state=(gi.start, 0))
   elem,count = state
-  if gi.onemore
+  if elem == nothing
     return nothing
   end
    
   # get pointers to current edges selected
   next = iterate(gi.bitarrays, gi.bitstate)
   if next == nothing
-    gi.onemore = true
-    return (elem, (elem,count+1))
+    return (elem, (nothing, count + 1))
   else gi.bitstate = next[2] end
   schema = next[1]
 
   # build graph and return state
-  G = initialize_graph!(gi.prealloc_g,gi.n, schema)
-  return (elem, (G, count + 1))
+  if (count+1)%2==0
+    gi.g_odd = initialize_graph(gi.g_odd,gi.n, schema)
+    return (elem, (gi.g_odd, count + 1))
+  else  
+    gi.g_even = initialize_graph(gi.g_even,gi.n, schema)
+    return (elem, (gi.g_even, count + 1))
+  end
 end
 
 function rand_graph(n,k)
@@ -178,6 +185,7 @@ function proportion_are_gossipable(n::Integer, k::Integer)::AbstractFloat
   count = 0
   total = 0
   for G in GraphIt(n,k)
+    #display(G)
     count += is_gossipable(G)
     total += 1
   end
@@ -185,7 +193,7 @@ function proportion_are_gossipable(n::Integer, k::Integer)::AbstractFloat
   return count / total
 end
 
-function proportion_are_gossipable(n::Integer, k::Integer, sample::Integer)::AbstractFloat
+function proportion_are_gossipable(n::Integer, k::Integer, sample::Integer, flag::Symbol)::AbstractFloat
   # easily-proven lower bound
   if k < 1.5*(n-1)
     println("safely ignored")
@@ -197,6 +205,8 @@ function proportion_are_gossipable(n::Integer, k::Integer, sample::Integer)::Abs
     G = rand_graph(n,k)
     count += is_gossipable(G)
   end
-  #println(count, " / ", total)
+  if flag == :debug
+    return Float32(count)
+  end
   return count / sample
 end
