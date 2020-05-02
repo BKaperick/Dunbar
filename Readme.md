@@ -35,7 +35,7 @@ For general discussion, we'll consider a function as  *infeasible* if it takes l
 For computations on my laptop, we see the first two implementations are infeasible for testing gossipability of graphs of even 7 nodes.
 
 
-## Latest Iteration if `proportion_are_gossipable(n,k)
+## Latest Iteration if `proportion_are_gossipable(n,k)`
 
 Observe for graphs of `n=9` nodes, we reach infeasibility with `k=27` edges for the latest iteration.  The largest class of graphs to test with 9 nodes would be `k=18`, so we still cannot fully compute with 9 nodes.
 
@@ -94,10 +94,10 @@ cum. classes | 1| 3| 6|10|16|25|37|...|270,322
 So we can compare across iterations by computing how many classes the current iteration can achieve with each test being feasible.
 
 Iteration | Number of feasible class checks| Changes | Commit
-----------|--------------------------------|----------------
-pag1      | 13 / 270,322                   | Initial | [c7721da](https://github.com/bkaperick/Dunbar/commit/c7721da)
-pag2      | 13 / 270,322                   | | [f4373b](https://github.com/bkaperick/Dunbar/commit/f4373b)
-pag3      | 16 / 270,322                   | | [dbff44a](https://github.com/bkaperick/Dunbar/commit/dbff44a)
+----------|--------------------------------|---------|------------------------------------------------------
+pag1      | 13 / 270,322                   | Initial                         | [c7721da](https://github.com/bkaperick/Dunbar/commit/c7721da)
+pag2      | 13 / 270,322                   | ...                             | [f4373b](https://github.com/bkaperick/Dunbar/commit/f4373b)
+pag3      | 16 / 270,322                   | ...                             | [dbff44a](https://github.com/bkaperick/Dunbar/commit/dbff44a)
 pag4      | 23 / 270,322                   | Adjacency matrix representation | [ddd3d3c](https://github.com/bkaperick/Dunbar/commit/ddd3d3c)
 pag5      | 27 / 270,322                   | Fixing allocation and type issues | [76e5731](https://github.com/bkaperick/Dunbar/commit/76e5731)
 pag6      | 27 / 270,322                   | `is_gossipable` overhaul (detailed above) | [ac1c165](https://github.com/bkaperick/Dunbar/commit/ac1c165)
