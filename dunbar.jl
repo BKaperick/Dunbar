@@ -175,7 +175,7 @@ end
 Returns the proportion of all possible graphs with `n` nodes and `k` edges
 which are gossipable.
 """
-function proportion_are_gossipable(n::Integer, k::Integer)::AbstractFloat
+function proportion_are_gossipable(n::Integer, k::Integer, flag=:empty)::AbstractFloat
   # easily-proven lower bound
   if k < 1.5*(n-1)
     println("safely ignored")
@@ -188,6 +188,11 @@ function proportion_are_gossipable(n::Integer, k::Integer)::AbstractFloat
     #display(G)
     count += is_gossipable(G)
     total += 1
+  end
+  if flag == :verbose
+    println("$(count) are gossipable")
+    println("$(total - count) are not gossipable")
+    println("$(total) graphs total")
   end
   #println(count, " / ", total)
   return count / total
