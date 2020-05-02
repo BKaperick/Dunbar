@@ -30,6 +30,7 @@ For general discussion, we'll consider a function as  *infeasible* if it takes l
  pag4(7,9) | 2.18s | 2.60GiB 
  pag5(7,9) | 1.24s | 1.91GiB
  pag6(7,9) | 442ms |  335MiB
+ pag7(7,9) | 362ms |  331MiB
 
 For computations on my laptop, we see the first two implementations are infeasible for testing gossipability of graphs of even 7 nodes.
 
@@ -40,9 +41,9 @@ Observe for graphs of `n=9` nodes, we reach infeasibility with `k=27` edges for 
 
 Section | time | %tot | alloc | %tot 
 ----------|-------|-------|---------|------------
-pag(9,27) | 601s | 70.6% | 205GiB | 70.9% 
-pag(9,28) | 192s | 22.6% | 65.8GiB | 22.8% 
-pag(9,29) | 57.4s | 6.75% | 18.2GiB | 6.29%
+pag(9,27) | 248s | 70.3%  | 303GiB  | 70.9% 
+pag(9,28) | 83.9s | 23.8% | 97.4GiB | 22.8% 
+pag(9,29) | 20.7s | 5.87% | 26.9GiB | 6.29%
 
 ## Strategies for computing `is_gossipable(G)`
 
@@ -92,14 +93,15 @@ cum. classes | 1| 3| 6|10|16|25|37|...|270,322
 
 So we can compare across iterations by computing how many classes the current iteration can achieve with each test being feasible.
 
-Iteration | Number of feasible class checks| Commit
-----------|--------------------------------|--------
-pag1      | 13 / 270,322                   | [c7721da](https://github.com/bkaperick/Dunbar/commit/c7721da)
-pag2      | 13 / 270,322                   | [f4373b](https://github.com/bkaperick/Dunbar/commit/f4373b)
-pag3      | 16 / 270,322                   | [dbff44a](https://github.com/bkaperick/Dunbar/commit/dbff44a)
-pag4      | 23 / 270,322                   | [ddd3d3c](https://github.com/bkaperick/Dunbar/commit/ddd3d3c)
-pag5      | 27 / 270,322                   | [76e5731](https://github.com/bkaperick/Dunbar/commit/76e5731)
-pag6      | 27 / 270,322                   | HEAD
+Iteration | Number of feasible class checks| Changes | Commit
+----------|--------------------------------|----------------
+pag1      | 13 / 270,322                   | Initial | [c7721da](https://github.com/bkaperick/Dunbar/commit/c7721da)
+pag2      | 13 / 270,322                   | | [f4373b](https://github.com/bkaperick/Dunbar/commit/f4373b)
+pag3      | 16 / 270,322                   | | [dbff44a](https://github.com/bkaperick/Dunbar/commit/dbff44a)
+pag4      | 23 / 270,322                   | Adjacency matrix representation | [ddd3d3c](https://github.com/bkaperick/Dunbar/commit/ddd3d3c)
+pag5      | 27 / 270,322                   | Fixing allocation and type issues | [76e5731](https://github.com/bkaperick/Dunbar/commit/76e5731)
+pag6      | 27 / 270,322                   | `is_gossipable` overhaul (detailed above) | [ac1c165](https://github.com/bkaperick/Dunbar/commit/ac1c165)
+pag7      | 28 / 270,322                   | Constant-time inprovement changing allocation for G | HEAD
 
 Again, for the motivating application, the goal is to do these compations for `n~150`, so we include that as reference.
 
