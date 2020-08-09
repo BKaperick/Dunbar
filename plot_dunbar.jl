@@ -36,43 +36,27 @@ function gather_error(n,k,samples,true_value)::Array{AbstractFloat,2}
   return hcat(ests,errors)
 end
 
-"""
-    plot_error(n,k,samples)
-
-Calls `plot_error` after exactly computing the `true_value`.
-"""
-function plot_error(n,k,samples)
-  true_value = proportion_are_gossipable(n,k,:verbose)
-  scatter(legend=false)
-  return plot_error(n,k,samples,true_value)
-end
-
-"""
-    plot_error(n,k,samples,true_value)
-
-Computes the estimated `proportion_are_gossipable(n,k)` value for each sample 
-size in `samples`, and then plots the sample size against the value's relative 
-error .
-"""
-function plot_error(n,k,samples,true_value)::Array{AbstractFloat,2}
-  error(x) = abs(true_value - x) / true_value
-  est_cum = 0
-  s_cum = 0
-  ests = []
-  for (i,s)=enumerate(samples)
-    s_cum += s
-    est_cum += proportion_are_gossipable(n,k,s,:debug)
-    scatter!((s,error(est_cum)))
-    #append!(ests, est_cum / s_cum)
+function estimate_order(estimates)
+  q_ests = []
+  prev_diff = estimates[3] - estimates[2]
+  denominator = log(abs(prev_diff / (estimates[2] - estimates[1])))
+  for k=3:length(estimates)-1
+    diff = estimates[k+1] - estimates[k]
+    numerator = log(abs(diff/prev_diff))
+    append!(q_ests, numerator/denominator)
+    
+    denominator = numerator
+    prev_diff = diff
   end
-  #errors = [error(est) for est in ests]
-  #return hcat(ests,errors)
+  return q_ests
 end
 
-samples = 10:1000:100000;
-#plot_error(Int8(6),Int8(8),samples)
-errs = gather_error(Int8(6),Int8(8),samples)
-plot(samples,errs[:,2],lab="relative error",w=3,ylims=(0,1))
 
+samples = 1000:1000:10000;
+errs = gather_error(Int8(10),Int8(19),samples,1)
+#plot(samples,errs[:,2],lab="relative error",w=3,ylims=(0,1))
+plot(samples,errs[:,1],lab="estimated proportion",w=3,ylims=(0,1))
+qs = estimate_order(errs[5:end,1])
+mean(qs)
 
 
