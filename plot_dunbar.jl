@@ -8,6 +8,7 @@ Calls `gather_error` after exactly computing the `true_value`.
 """
 function gather_error(n,k,samples)
   true_value = proportion_are_gossipable(n,k,:verbose)
+  println("true value: ", true_value)
   return gather_error(n,k,samples,true_value)
 end
 
@@ -22,10 +23,13 @@ function gather_error(n,k,samples,true_value)::Array{AbstractFloat,2}
   error(x) = abs(true_value - x) / true_value
   est_cum = 0
   s_cum = 0
+  last_s = 0
   ests = []
   for (i,s)=enumerate(samples)
-    s_cum += s
-    est_cum += proportion_are_gossipable(n,k,s,:debug)
+    s_left = s - last_s
+    s_cum += s_left
+    est_cum += randomized_proportion_are_gossipable(n,k,s_left,:debug)
+    println(s, ": ", est_cum/s_cum, " | ", error(est_cum/s_cum))
     append!(ests, est_cum / s_cum)
   end
   errors = [error(est) for est in ests]
@@ -65,11 +69,10 @@ function plot_error(n,k,samples,true_value)::Array{AbstractFloat,2}
   #return hcat(ests,errors)
 end
 
-samples = 1000:1000:5000000;
+samples = 10:1000:100000;
 #plot_error(Int8(6),Int8(8),samples)
-errs = gather_error(Int8(7),Int8(8),samples)
-plot()
-plot(samples,errs[:,2],lab="relative error",w=3)
+errs = gather_error(Int8(6),Int8(8),samples)
+plot(samples,errs[:,2],lab="relative error",w=3,ylims=(0,1))
 
 
 

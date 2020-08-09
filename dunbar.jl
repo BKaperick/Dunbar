@@ -52,7 +52,7 @@ end
 function rand_bit_it(n,k)
   b = Integer(n*(n-1)/2)
   bits = zeros(Bool,b);
-  bits[rand(1:b,k)] .= true
+  bits[sample(1:b,k;replace=false)] .= true
   return bits;
 end
 
@@ -169,6 +169,7 @@ function rand_graph(n,k)
   bits = rand_bit_it(n,k)
   return initialize_graph(n,bits)
 end
+
 """
     proportion_are_gossipable(n, k)
 
@@ -198,7 +199,7 @@ function proportion_are_gossipable(n::Integer, k::Integer, flag=:empty)::Abstrac
   return count / total
 end
 
-function proportion_are_gossipable(n::Integer, k::Integer, sample::Integer, flag::Symbol)::AbstractFloat
+function randomized_proportion_are_gossipable(n::Integer, k::Integer, sample::Integer, flag::Symbol)::AbstractFloat
   # easily-proven lower bound
   if k < 1.5*(n-1)
     println("safely ignored")
