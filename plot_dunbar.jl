@@ -1,4 +1,5 @@
 using Plots
+using StatsBase
 include("Dunbar.jl")
 
 """
@@ -25,10 +26,14 @@ function gather_error(n,k,samples,true_value)::Array{AbstractFloat,2}
   s_cum = 0
   last_s = 0
   ests = []
+  #confidences = 
   for (i,s)=enumerate(samples)
     s_left = s - last_s
     s_cum += s_left
     est_cum += randomized_proportion_are_gossipable(n,k,s_left,:debug)
+    #StatsBase.confint(test)#; .95) #, :both, :clopper_pearson)
+
+
     println(s, ": ", est_cum/s_cum, " | ", error(est_cum/s_cum))
     append!(ests, est_cum / s_cum)
   end
@@ -52,11 +57,12 @@ function estimate_order(estimates)
 end
 
 
-samples = 1000:1000:10000;
-errs = gather_error(Int8(10),Int8(19),samples,1)
-#plot(samples,errs[:,2],lab="relative error",w=3,ylims=(0,1))
-plot(samples,errs[:,1],lab="estimated proportion",w=3,ylims=(0,1))
+samples = 1000:1000:100000;
+errs = gather_error(Int8(7),Int8(9),samples)
+plt = plot(samples,errs[:,2],lab="relative error",w=3,ylims=(1e-6,1), yaxis=:log)
+#plt = plot(samples,errs[:,1],lab="estimated proportion",w=3,ylims=(0,1))
 qs = estimate_order(errs[5:end,1])
 mean(qs)
-
+display(plt)
+println("plotted")
 
