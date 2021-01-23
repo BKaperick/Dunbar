@@ -2,8 +2,6 @@ using SQLite
 using DataFrames
 using Dates
 
-db = SQLite.DB("precomputed")
-initialize_table("schema.txt")
 #existingPairs = DBInterface.execute(db, "Select nodes,edges from proportions") |> DataFrame
 
 # Helper functions
@@ -12,14 +10,14 @@ function drop_table(name)
     query_db("drop table if exists $name;")
 end
 
-function initialize_table(schema_file_name,overwrite)
+function initialize_table(schema_file_name,table_name,overwrite)
     f = open(schema_file_name)
     columns_and_types = join(readlines(f), ", ")
     if_not_exists = overwrite ? "" : "if not exists"
     if overwrite
-        drop_table("proportions")
+        drop_table(table_name)
     end
-    query_db("create table $if_not_exists proportions ($columns_and_types)")
+    query_db("create table $if_not_exists $table_name ($columns_and_types)")
 end
 
 function query_db(query)
