@@ -115,7 +115,7 @@ end
 
 # Standard benchmark used at top of Readme.
 benchmark() = profile_min_pag(Int8(7),3)
-benchmark(n::Int8) = profile_min_pag(n,3)
+benchmark(n) = profile_min_pag(Int8(n),3)
 
 
 """
@@ -124,16 +124,16 @@ benchmark(n::Int8) = profile_min_pag(n,3)
 Converts a `TimerOutput` object into a (possibly multiple) row(s) in `benchmark_timing_table`.
 """
 function store_benchmark_result(to::TimerOutput)
-    columns_string = "command,nodes,edges,ncalls,avgtime,alloc"
+    columns_string = "command,nodes,edges,ncalls,avgtime,avgalloc"
     for (name,timer) in t.inner_timers
         command,inputs = split(name,'(')
         print(inputs)
         nodes,edges = split(replace(inputs,")" => ""),",")
         ncalls = TimerOutputs.ncalls(timer)
         avgtime = Int64(TimerOutputs.tottime(timer) / (1000 * ncalls))
-        alloc = TimerOutputs.totallocated(timer)
+        avgalloc = Int64(TimerOutputs.totallocated(timer) / ncalls)
         
-        values_string = "'$command',$nodes,$edges,$ncalls,$avgtime,$alloc"
+        values_string = "'$command',$nodes,$edges,$ncalls,$avgtime,$avgalloc"
         insert_with_hash_and_date(benchmark_timing_table, columns_string, values_string)
     end
 end
