@@ -202,7 +202,7 @@ function proportion_are_gossipable(n::Integer, k::Integer, flag=:empty)::Abstrac
   end
   result = count / total
   if flag == :save
-    insert_pag_result(n,k,res)
+    insert_pag_result(n,k,result)
   end
   return result
 end
