@@ -117,6 +117,12 @@ end
 benchmark() = profile_min_pag(Int8(7),3)
 benchmark(n::Int8) = profile_min_pag(n,3)
 
+
+"""
+    store_benchmark_result(to::TimerOutput)
+
+Converts a `TimerOutput` object into a (possibly multiple) row(s) in `benchmark_timing_table`.
+"""
 function store_benchmark_result(to::TimerOutput)
     columns_string = "command,nodes,edges,ncalls,avgtime,alloc"
     for (name,timer) in t.inner_timers
