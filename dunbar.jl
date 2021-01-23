@@ -1,4 +1,6 @@
 using LinearAlgebra
+using SQLite
+include("store_dunbar.jl")
 
 mutable struct BitIt{T<:Integer}
   n::T # number of bits
@@ -183,20 +185,26 @@ function proportion_are_gossipable(n::Integer, k::Integer, flag=:empty)::Abstrac
     return 0.0
   end
 
+  if flag == :precomputed
+
+  end
+
   count = 0
   total = 0
   for G in GraphIt(n,k)
-    #display(G)
     count += is_gossipable(G)
     total += 1
   end
   if flag == :verbose
     println("$(count) are gossipable")
     println("$(total - count) are not gossipable")
-    println("$(total) graphs total")
+    println(count, " / ", total)
   end
-  #println(count, " / ", total)
-  return count / total
+  result = count / total
+  if flag == :save
+    insert_pag_result(n,k,res)
+  end
+  return result
 end
 
 function randomized_proportion_are_gossipable(n::Integer, k::Integer, sample::Integer, flag::Symbol)::AbstractFloat
@@ -216,3 +224,20 @@ function randomized_proportion_are_gossipable(n::Integer, k::Integer, sample::In
   end
   return count / sample
 end
+
+"""
+    get_and_store_precomputed(n, e)
+
+Check if this case or an equivalent case has already been stored, and returns it.
+Otherwise, computes the value and inserts that into db before returning it.
+"""
+function compute_and_store_precomputed(n,k)
+    # Check if (n,k) result is already stored
+    precomputed_res = get_and_insert_symmetric_result(n,k)
+
+    # Otherwise, compute now
+    if (precomputed_res == Nothing)
+        return proportion_are_gossipable(Int8(n),Int8(k),:save)
+    end
+    return precomputed_res
+end 

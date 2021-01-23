@@ -1,6 +1,5 @@
 using SQLite
 using DataFrames
-include("Dunbar.jl")
 
 db = SQLite.DB("precomputed")
 existingPairs = DBInterface.execute(db, "Select nodes,edges from proportions") |> DataFrame
@@ -18,8 +17,12 @@ end
 function add_column(table_name, column_name,sqlite_data_type)
     query_db("alter table $table_name add column $column_name $sqlite_data_type;")
 end
+function add_column(column_name,sqlite_data_type)
+    query_db("alter table proportions add column $column_name $sqlite_data_type;")
+end
 
 function insert_pag_result(n,k,res::Float64)
+
     DBInterface.execute(db, "insert into proportions (nodes,edges,pag) values ($n,$k,$res)")
 end 
 
@@ -31,23 +34,20 @@ function get_precomputed(n,k)
     return df.pag[1]
 end 
 
-function store_precomputed(n,k)
+"""
+    get_and_insert_symmetric_result(n,k)
+
+Retrieves precomputed case or equivalent symmetric case, inserting one or the other
+if one is missing.
+"""
+function get_and_insert_symmetric_result(n,k)
     already_stored = get_precomputed(n,k)
     k_symm = n*(n-1)/2 - k
     already_stored_symm = get_precomputed(n,k_symm)
-    if (already_stored != Nothing)
-        if (already_stored_symm == Nothing)
-            insert_pag_result(n,k_symm,already_stored)
-        end
-        return already_stored
+    if (already_stored != Nothing && already_stored_symm == Nothing)
+        insert_pag_result(n,k_symm,already_stored)
+    elseif (already_stored == Nothing && already_stored_symm != Nothing)
+        insert_pag_result(n,k,already_stored_symm)
     end
-    if (already_stored_symm != Nothing)
-        if (already_stored == Nothing)
-            insert_pag_result(n,k,already_stored_symm)
-        end
-        return already_stored
-    end
-    res = proportion_are_gossipable(Int8(n),Int8(k))
-    insert_pag_result(n,k,res)
-    return res
-end 
+    return already_stored
+end
