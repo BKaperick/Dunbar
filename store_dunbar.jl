@@ -8,15 +8,18 @@ initialize_table("schema.txt")
 
 # Helper functions
 
+function drop_table(name)
+    query_db("drop table if exists $name;")
+end
+
 function initialize_table(schema_file_name,overwrite)
     f = open(schema_file_name)
     columns_and_types = join(readlines(f), ", ")
     if_not_exists = overwrite ? "" : "if not exists"
     if overwrite
-        query_db("drop table if exists proportions")
+        drop_table("proportions")
     end
     query_db("create table $if_not_exists proportions ($columns_and_types)")
-    return get_table()
 end
 
 function query_db(query)
@@ -45,25 +48,33 @@ end
 function delete_column(table, column)
     # Get schema string of columns, without the column to remove
     table_info = get_table_info(table)
-    columns_and_types = map(r -> r.name == column ? "$(r.name) $(r.type)" : "", eachrow(table_info))
-    columns = map(r -> r.name == column ? "$(r.name)" : "", eachrow(table_info))
-    columns_types_string = "($(join(columns_and_types, ", ")))"
+    filtered_info_iterator = filter(r -> r.name != column, eachrow(table_info))
+    
+    primary_keys = map(r -> r.name, sort(filter(r -> r.pk > 0, filtered_info_iterator)))
+    pk_string = "primary key ($(join(primary_keys, ", "))) on conflict replace"
+    columns_and_types = map(r -> "$(r.name) $(r.type)", filtered_info_iterator)
+    columns = map(r -> "$(r.name)", filtered_info_iterator)
+    columns_types_string = join(columns_and_types, ", ")
     columns_string = join(columns, ", ")
     
     # create new table with the new schema
     tmp_name = "tmp$table"
+    drop_table(tmp_name)
     rename_table(table, tmp_name)
-    create_query = "create table $table $columns_types_string;"
-    print(create_query)
+    create_query = "create table if not exists $table ($columns_types_string, $pk_string)"
     query_db(create_query)
     
     # populate new table with old data
-    populate_query = "insert into table $tmp_name ($columns_string) select $columns_string from $table"
+    select_query = "select $columns_string from $table"
+    populate_query = "insert into $tmp_name ($columns_string) $select_query"
     query_db(populate_query)
+
+    # Rename temporary table back to original name
+    drop_table(table)
     rename_table(tmp_name, table)
 
     # drop temporary table
-    query_db("drop table $tmp_name;")
+    drop_table(tmp_name)
 end
 
 function insert_pag_result(n,k,res::Float64)

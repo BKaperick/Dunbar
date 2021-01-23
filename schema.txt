@@ -4,5 +4,4 @@ pag REAL
 timing Float64
 run_date DateTime
 commit_hash text
-test text
 primary key (nodes, edges) on conflict replace
