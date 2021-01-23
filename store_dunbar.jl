@@ -3,6 +3,7 @@ using DataFrames
 using Dates
 using TimerOutputs
 
+
 # Helper functions
 
 function drop_table(name)
@@ -19,7 +20,10 @@ function initialize_table(schema_file_name,table_name,overwrite)
     query_db("create table $if_not_exists $table_name ($columns_and_types)")
 end
 
-function query_db(query)
+function query_db(query, mode=global_sql_mode)
+    if mode == :verbose
+        print("$query\n")
+    end
     return DBInterface.execute(db, query) |> DataFrame
 end
 
@@ -77,23 +81,17 @@ end
 function insert_pag_result(n,k,res::Float64)
     columns_string = "nodes,edges,pag"
     values_string = "$n,$k,$res"
-    insert_with_hash_and_date("proportions", columns_string, values_string)
+    insert_with_hash_and_date(pag_result_table, columns_string, values_string)
 end 
 
 function insert_with_hash_and_date(table, columns_string, values_string)
-    git_hash = get_current_git_hash()
+    commit_hash = get_current_git_hash()
     run_date = Dates.now()
-    query_db("insert into $table ($columns_string,commit_hash,run_date) values ($values_string,'$git_hash','$run_date')")
+    query_db("insert into $table ($columns_string,commit_hash,run_date) values ($values_string,'$commit_hash','$run_date')")
 end
 
-function insert_benchmark_result(to::TimerOutput)
-    git_hash = get_current_git_hash()
-    run_date = Dates.now()
-    DBInterface.execute(db, "insert into proportions (nodes,edges,pag,commit_hash,run_date) values ($n,$k,$res,'$git_hash','$run_date')")
-end 
-
 function get_precomputed(n,k)
-    df = query_db("select pag from proportions where nodes=$n and edges=$k")
+    df = query_db("select pag from $pag_result_table where nodes=$n and edges=$k")
     if (size(df)[1] == 0)
         return Nothing
     end

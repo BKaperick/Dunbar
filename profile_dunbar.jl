@@ -121,13 +121,15 @@ function store_benchmark_result(to::TimerOutput)
     columns_string = "command,nodes,edges,ncalls,avgtime,alloc"
     for (name,timer) in t.inner_timers
         command,inputs = split(name,'(')
-        nodes,edges = split(replace(inputs,')' => ''),',')
+        print(inputs)
+        nodes,edges = split(replace(inputs,")" => ""),",")
         ncalls = TimerOutputs.ncalls(timer)
         avgtime = Int64(TimerOutputs.tottime(timer) / (1000 * ncalls))
         alloc = TimerOutputs.totallocated(timer)
         
-        values_string = "$command,$nodes,$edges,$ncalls,$avgtime,$alloc"
-        insert_with_hash_and_date("BenchmarkTiming", columns_string, values_string)
+        values_string = "'$command',$nodes,$edges,$ncalls,$avgtime,$alloc"
+        insert_with_hash_and_date(benchmark_timing_table, columns_string, values_string)
+    end
 end
 
 # export table to readme.
