@@ -1,8 +1,7 @@
 using SQLite
 using DataFrames
 using Dates
-
-#existingPairs = DBInterface.execute(db, "Select nodes,edges from proportions") |> DataFrame
+using TimerOutputs
 
 # Helper functions
 
@@ -24,8 +23,8 @@ function query_db(query)
     return DBInterface.execute(db, query) |> DataFrame
 end
 
-function get_table()
-    return query_db("select * from proportions order by nodes, edges")
+function get_table(name)
+    return query_db("select * from $name order by nodes, edges")
 end
 
 function get_table_info(table)
@@ -35,8 +34,8 @@ end
 function add_column(table_name, column_name,sqlite_data_type)
     query_db("alter table $table_name add column $column_name $sqlite_data_type;")
 end
-function add_column(column_name,sqlite_data_type)
-    query_db("alter table proportions add column $column_name $sqlite_data_type;")
+function add_column(table_name,column_name,sqlite_data_type)
+    query_db("alter table $table_name add column $column_name $sqlite_data_type;")
 end
 
 function rename_table(old_name,new_name)
@@ -76,6 +75,18 @@ function delete_column(table, column)
 end
 
 function insert_pag_result(n,k,res::Float64)
+    columns_string = "nodes,edges,pag"
+    values_string = "$n,$k,$res"
+    insert_with_hash_and_date("proportions", columns_string, values_string)
+end 
+
+function insert_with_hash_and_date(table, columns_string, values_string)
+    git_hash = get_current_git_hash()
+    run_date = Dates.now()
+    query_db("insert into $table ($columns_string,commit_hash,run_date) values ($values_string,'$git_hash','$run_date')")
+end
+
+function insert_benchmark_result(to::TimerOutput)
     git_hash = get_current_git_hash()
     run_date = Dates.now()
     DBInterface.execute(db, "insert into proportions (nodes,edges,pag,commit_hash,run_date) values ($n,$k,$res,'$git_hash','$run_date')")

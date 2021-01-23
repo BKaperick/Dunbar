@@ -117,6 +117,19 @@ end
 benchmark() = profile_min_pag(Int8(7),3)
 benchmark(n::Int8) = profile_min_pag(n,3)
 
+function store_benchmark_result(to::TimerOutput)
+    columns_string = "command,nodes,edges,ncalls,avgtime,alloc"
+    for (name,timer) in t.inner_timers
+        command,inputs = split(name,'(')
+        nodes,edges = split(replace(inputs,')' => ''),',')
+        ncalls = TimerOutputs.ncalls(timer)
+        avgtime = Int64(TimerOutputs.tottime(timer) / (1000 * ncalls))
+        alloc = TimerOutputs.totallocated(timer)
+        
+        values_string = "$command,$nodes,$edges,$ncalls,$avgtime,$alloc"
+        insert_with_hash_and_date("BenchmarkTiming", columns_string, values_string)
+end
+
 # export table to readme.
 #open("Readme.md","a") do io
 #  println(io,timeroutput_to_markdown(to));
