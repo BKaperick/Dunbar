@@ -2,37 +2,37 @@ using TimerOutputs
 include("Dunbar.jl")
 
 function profile_bitit_by_n(k::Integer, nrange, trials)
-  to = TimerOutput()
-  for t=1:trials
-    for n = nrange
-      @timeit to "($(n))" reduce(+,BitIt(n,k))
+    to = TimerOutput()
+    for t=1:trials
+        for n = nrange
+            @timeit to "($(n))" reduce(+,BitIt(n,k))
+        end
     end
-  end
-  return to
+    return to
 end
 
 function profile_bitit_by_k(n::Integer, krange, trials)
-  to = TimerOutput()
-  for t=1:trials
-    for k = krange
-      @timeit to "($(k))" reduce(+,BitIt(n,k))
+    to = TimerOutput()
+    for t=1:trials
+        for k = krange
+            @timeit to "($(k))" reduce(+,BitIt(n,k))
+        end
     end
-  end
-  return to
+    return to
 end
 
 """
-    profile_min_pag(n::Integer, T::Integer)
+    profile_min_pag(nrange::OrdinalRange{Integer}, to::TimerOutput, trials)
 
-Profile `proportion_are_gossipable(n,k)` for all combinatorially-unique values 
-of `k` with `T` trials. 
+Profile `proportion_are_gossipable(n,k)` for all `n` in `nrange` and minimal non-trivial `k`.
 """
-function profile_min_pag(nrange::OrdinalRange{Integer}, trials)
-  proportion_are_gossipable(7,9) # make sure compiled
-  to = TimerOutput()
-  for n in nrange
-    profile_min_pag(n,trials,to)
-  end
+function profile_min_pag(nrange::OrdinalRange{Integer}, to::TimerOutput, trials)
+    results 
+    for n in nrange
+        result = profile_min_pag(n,trials,to)
+        push!(results, result)
+    end
+    return results
 end
 
 """
@@ -41,39 +41,36 @@ end
 Profile `proportion_are_gossipable(n,k)` updating `to` for minimum non-trivial 
 value of `k` with `T` trials. 
 """
-function profile_min_pag(n::T,trials,to=TimerOutput()) where T<:Integer
-  kmin = T(ceil(1.5*(n-1)))
-  profile_pag(n,kmin,to,trials)
-  println(to)
-  return to
+function profile_min_pag(n::T,trials,to::TimerOutput) where T<:Integer
+    kmin = T(ceil(1.5*(n-1)))
+    return profile_pag(n,kmin,to,trials)
 end
 
 """
-    profile_pag(n::Integer, T::Integer)
+    profile_pag(n::T, trials, to::TimerOutput)
 
 Profile `proportion_are_gossipable(n,k)` for all combinatorially-unique values 
-of `k` with `T` trials. 
+of `k` with `trials` trials. 
 """
-function profile_pag(n::T, trials) where T<:Integer
-  kmax = T(0.5*n^2-1.5*n+2)
-  kmin = T(ceil(n*(n-1)/4))
-  return profile_pag(n,kmax:-one(T):kmin,trials)
+function profile_pag(n::T, trials, to::TimerOutput) where T<:Integer
+    kmax = T(0.5*n^2-1.5*n+2)
+    kmin = T(ceil(n*(n-1)/4))
+    return profile_pag(n, kmax:-one(T):kmin, trials, to)
 end
 
 """
-    profile_pag(n::Integer,krange::OrdinalRange{Integer}, T::Integer)
+    profile_pag(n::T, krange::OrdinalRange{T}, trials, to::TimerOutput)
 
 Profile `proportion_are_gossipable(n,k)` for all values of `k` in `krange` with 
-`T` trials. 
+`trials` trials. 
 """
-function profile_pag(n::T,krange::OrdinalRange{T}, trials) where T<:Integer
-  @time proportion_are_gossipable(T(5),T(7))
-  to = TimerOutput()
-  for k in krange
-    profile_pag(n,k,to,trials)
-    println(to)
-  end
-  return to
+function profile_pag(n::T, krange::OrdinalRange{T}, trials, to::TimerOutput) where T<:Integer
+    results = []
+    for k in krange
+        result = profile_pag(n,k,trials,to)
+        push!(results, result)
+    end
+    return results
 end
 
 """
@@ -81,41 +78,31 @@ end
 
 Profile `proportion_are_gossipable(n,k)` updating `to` with `T` trials. 
 """
-function profile_pag(n::Integer, k::Integer, to::TimerOutput, trials)
-  for t=1:trials
-    @timeit to "pag($(n),$(k))" proportion_are_gossipable(n,k)
-  end
-end
-function profile_ig(n,k)
-  to = TimerOutput()
-  return profile_ig(n,k,to)
-end
-function profile_ig(n,k,to)
-  for G in GraphIt(n,k)
-    @timeit to "graphsearch($(n),$(k))" is_gossipable1(G,n)
-    @timeit to "cutearlyred($(n),$(k))" is_gossipable2(G)
-    @timeit to "condensered($(n),$(k))" is_gossipable3(G)
-    @timeit to "fullmatmult($(n),$(k))" is_gossipable4(G)
-  end
-  return to
+function  profile_pag(n::Integer, k::Integer, trials, to::TimerOutput)
+    for t=1:trials
+        # result is deterministic, so ok its overwritten on each loop
+        result = @timeit to "pag($(n),$(k))" proportion_are_gossipable(n,k)
+    end
+    return result
 end
 
 function timeroutput_to_markdown(to)
-  table = replace(string(to), r"([\)nsetgc\ds\%B]) " => s"\1 |")
-  badHyphen = table[end]
-  
-  # replace weird hyphen with mark-down recognizable hyphen
-  table = replace(table, Regex(String([Char(9472)])) => s"-")
+    table = replace(string(to), r"([\)nsetgc\ds\%B]) " => s"\1 |")
+    badHyphen = table[end]
+    
+    # replace weird hyphen with mark-down recognizable hyphen
+    table = replace(table, Regex(String([Char(9472)])) => s"-")
 
-  table = split(table,"\n")[6:end]
-  table[2] = "--------|-------|-----|-----|----|------|-----|----"*table[2]
-  table = table[1:end-1]
-  return reduce(*,map(x -> x*"\n", table))
+    table = split(table,"\n")[6:end]
+    table[2] = "--------|-------|-----|-----|----|------|-----|----"*table[2]
+    table = table[1:end-1]
+    return reduce(*,map(x -> x*"\n", table))
 end
 
 # Standard benchmark used at top of Readme.
-benchmark() = profile_min_pag(Int8(7),3)
-benchmark(n) = profile_min_pag(Int8(n),3)
+to = TimerOutput()
+benchmark() = profile_min_pag(Int8(7),3,to)
+benchmark(n) = profile_min_pag(Int8(n),3,to)
 
 
 """
@@ -125,7 +112,7 @@ Converts a `TimerOutput` object into a (possibly multiple) row(s) in `benchmark_
 """
 function store_benchmark_result(to::TimerOutput)
     columns_string = "command,nodes,edges,ncalls,avgtime,avgalloc"
-    for (name,timer) in t.inner_timers
+    for (name,timer) in to.inner_timers
         command,inputs = split(name,'(')
         print(inputs)
         nodes,edges = split(replace(inputs,")" => ""),",")
