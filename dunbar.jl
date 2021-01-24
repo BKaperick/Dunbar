@@ -186,7 +186,7 @@ function proportion_are_gossipable(n::Integer, k::Integer, flag=:empty)::Abstrac
   end
 
   if flag == :precomputed
-
+        
   end
 
   count = 0
@@ -201,9 +201,6 @@ function proportion_are_gossipable(n::Integer, k::Integer, flag=:empty)::Abstrac
     println(count, " / ", total)
   end
   result = count / total
-  if flag == :save
-    insert_pag_result(n,k,result)
-  end
   return result
 end
 
@@ -226,18 +223,21 @@ function randomized_proportion_are_gossipable(n::Integer, k::Integer, sample::In
 end
 
 """
-    get_and_store_precomputed(n, e)
+    proportion_are_gossipable_with_precompute(n, k)
 
 Check if this case or an equivalent case has already been stored, and returns it.
 Otherwise, computes the value and inserts that into db before returning it.
 """
-function compute_and_store_precomputed(n,k)
+function proportion_are_gossipable_with_precompute(n, k)
     # Check if (n,k) result is already stored
-    precomputed_res = get_and_insert_symmetric_result(n,k)
+    precomputed_res = get_precomputed(n,k)
 
     # Otherwise, compute now
     if (precomputed_res == Nothing)
-        return proportion_are_gossipable(Int8(n),Int8(k),:save)
+        result = proportion_are_gossipable(Int8(n),Int8(k))
+        insert_pag_result(n,k,result)
+        return result
     end
+
     return precomputed_res
 end 

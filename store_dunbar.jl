@@ -85,9 +85,12 @@ function delete_column(table, column)
 end
 
 function insert_pag_result(n,k,res::Float64)
+    k_symm = n*(n-1)/2 - k
     columns_string = "nodes,edges,pag"
     values_string = "$n,$k,$res"
+    values_string_symm = "$n,$k_symm,$res"
     insert_with_hash_and_date(pag_result_table, columns_string, values_string)
+    insert_with_hash_and_date(pag_result_table, columns_string, values_string_symm)
 end 
 
 """
@@ -116,24 +119,6 @@ function get_precomputed_pag_result(n,k)
     end
     return df.pag[1]
 end 
-
-"""
-    get_and_insert_symmetric_result(n,k)
-
-Retrieves precomputed case or equivalent symmetric case, inserting one or the other
-if one is missing.
-"""
-function get_and_insert_symmetric_result(n,k)
-    already_stored = get_precomputed(n,k)
-    k_symm = n*(n-1)/2 - k
-    already_stored_symm = get_precomputed(n,k_symm)
-    if (already_stored != Nothing && already_stored_symm == Nothing)
-        insert_pag_result(n,k_symm,already_stored)
-    elseif (already_stored == Nothing && already_stored_symm != Nothing)
-        insert_pag_result(n,k,already_stored_symm)
-    end
-    return already_stored
-end
 
 """
     get_current_git_hash()
