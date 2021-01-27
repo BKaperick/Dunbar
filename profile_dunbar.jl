@@ -1,4 +1,5 @@
 using TimerOutputs
+using BenchmarkTools
 include("Dunbar.jl")
 
 function profile_bitit_by_n(k::Integer, nrange, trials)
@@ -65,6 +66,7 @@ Profile `proportion_are_gossipable(n,k)` for all values of `k` in `krange` with
 `trials` trials. 
 """
 function profile_pag(n::T, krange::OrdinalRange{T}, trials, to::TimerOutput) where T<:Integer
+    result = 0.0
     results = []
     for k in krange
         result = profile_pag(n,k,trials,to)
@@ -79,9 +81,24 @@ end
 Profile `proportion_are_gossipable(n,k)` updating `to` with `T` trials. 
 """
 function  profile_pag(n::Integer, k::Integer, trials, to::TimerOutput)
+    result = 0.0
     for t=1:trials
         # result is deterministic, so ok its overwritten on each loop
         result = @timeit to "pag($(n),$(k))" proportion_are_gossipable(n,k)
+    end
+    return result
+end
+
+"""
+    profile_pag(n::Integer, k::Integer, to::TimerOutput, T::Integer)
+
+Profile `proportion_are_gossipable(n,k)` updating `to` with `T` trials. 
+"""
+function  profile_pag(n::Integer, k::Integer, trials)
+    result = 0.0
+    for t=1:trials
+        # result is deterministic, so ok its overwritten on each loop
+        result = @benchmark proportion_are_gossipable(n,k)
     end
     return result
 end
@@ -114,16 +131,21 @@ function store_benchmark_result(to::TimerOutput)
     columns_string = "command,nodes,edges,ncalls,avgtime,avgalloc"
     for (name,timer) in to.inner_timers
         command,inputs = split(name,'(')
-        print(inputs)
         nodes,edges = split(replace(inputs,")" => ""),",")
-        ncalls = TimerOutputs.ncalls(timer)
-        avgtime = Int64(TimerOutputs.tottime(timer) / (1000 * ncalls))
-        avgalloc = Int64(TimerOutputs.totallocated(timer) / ncalls)
+        timer_data = timer.accumulated_data
+        ncalls = timer_data.ncalls
+
+        # Convert time to milliseconds
+        avgtime = Int64(round(timer_data.time / (timer_data.ncalls * 1e6)))
+
+        # Convert allocations to MiB (2^20 bytes)
+        avgalloc = Int64(round(timer_data.allocs / (timer_data.ncalls * (2^20))))
         
         values_string = "'$command',$nodes,$edges,$ncalls,$avgtime,$avgalloc"
         insert_with_hash_and_date(benchmark_timing_table, columns_string, values_string)
     end
 end
+
 
 # export table to readme.
 #open("Readme.md","a") do io

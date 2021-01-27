@@ -6,7 +6,7 @@ db = SQLite.DB("precomputed")
 
 
 initialize_table("schema.txt",pag_result_table,false) 
-initialize_table("benchmark_schema.txt",benchmark_timing_table,false) 
+initialize_table("benchmark_schema.txt",benchmark_timing_table,true) 
 
 proportion_are_gossipable(7,9) # make sure compiled successfully
 
@@ -20,10 +20,10 @@ function profile_and_precompute_pag(n, k, trials)
     
     if (precomputed_res == Nothing)
         insert_pag_result(n, k, result)
+        return result
     end
     
     # Flag if result has changed from a previously stored value
     @assert result == precomputed_res
-
     return result
 end
