@@ -128,6 +128,7 @@ benchmark(n) = profile_min_pag(Int8(n),3,to)
 Converts a `TimerOutput` object into a (possibly multiple) row(s) in `benchmark_timing_table`.
 """
 function store_benchmark_result(to::TimerOutput)
+    # TODO: rename ncalls to ntrials
     columns_string = "command,nodes,edges,ncalls,avgtime,avgalloc"
     for (name,timer) in to.inner_timers
         command,inputs = split(name,'(')
@@ -141,11 +142,35 @@ function store_benchmark_result(to::TimerOutput)
         # Convert allocations to MiB (2^20 bytes)
         avgalloc = Int64(round(timer_data.allocs / (timer_data.ncalls * (2^20))))
         
+        # Update an existing row if this same command has already been run with these params
+        # with this code
+        (ncalls, avgtime, avgalloc) = combine_benchmark_results_with_existing_row(command, nodes, edges, ncalls, avgtime, avgalloc)
         values_string = "'$command',$nodes,$edges,$ncalls,$avgtime,$avgalloc"
+
         insert_with_hash_and_date(benchmark_timing_table, columns_string, values_string)
     end
 end
 
+"""
+    combine_benchmark_results_with_existing_row(command, nodes, edges, ncalls, avgtime, avgalloc)
+
+Checks if this benchmark result has already been computed on this commit, and if so, returns 
+the updated average combining these two runs so we can update the row instead of inserting a new one.
+"""
+function combine_benchmark_results_with_existing_row(command, nodes, edges, ncalls, avgtime, avgalloc)
+    commithash = get_current_git_hash()
+    # For now, assume there is just one
+    prev_row = query_db("select ncalls, avgtime, avgalloc from $benchmark_timing_table 
+             where command = '$command' and nodes = $nodes and edges = $edges and commit_hash = '$commithash'")
+    if (size(prev_row)[1] == 0)
+        return (ncalls, avgtime, avgalloc)
+    end
+
+    trials = ncalls + prev_row["ncalls"][1]
+    new_avgtime = ((avgtime * ncalls) + (prev_row["ncalls"][1] * prev_row["avgtime"][1])) / trials
+    new_avgalloc = ((avgalloc * ncalls) + (prev_row["ncalls"][1] * prev_row["avgalloc"][1])) / trials
+    return (trials, new_avgtime, new_avgalloc)
+end
 
 # export table to readme.
 #open("Readme.md","a") do io

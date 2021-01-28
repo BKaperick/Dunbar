@@ -3,7 +3,7 @@ nodes int
 edges int
 ncalls int
 avgtime int
-avgalloc text
+avgalloc int
 run_date DateTime
 commit_hash text
 primary key (commit_hash, command, nodes, edges) on conflict replace

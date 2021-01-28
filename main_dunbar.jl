@@ -6,7 +6,7 @@ db = SQLite.DB("precomputed")
 
 
 initialize_table("schema.txt",pag_result_table,false) 
-initialize_table("benchmark_schema.txt",benchmark_timing_table,true) 
+initialize_table("benchmark_schema.txt",benchmark_timing_table,false) 
 
 proportion_are_gossipable(7,9) # make sure compiled successfully
 
