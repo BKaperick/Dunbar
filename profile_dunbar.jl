@@ -134,18 +134,18 @@ function store_benchmark_result(to::TimerOutput)
         command,inputs = split(name,'(')
         nodes,edges = split(replace(inputs,")" => ""),",")
         timer_data = timer.accumulated_data
-        ncalls = timer_data.ncalls
+        trials = timer_data.ncalls
 
         # Convert time to milliseconds
-        avgtime = Int64(round(timer_data.time / (timer_data.ncalls * 1e6)))
+        avgtime = Int64(round(timer_data.time / (trials * 1e6)))
 
         # Convert allocations to MiB (2^20 bytes)
-        avgalloc = Int64(round(timer_data.allocs / (timer_data.ncalls * (2^20))))
+        avgalloc = Int64(round(timer_data.allocs / (trials * (2^20))))
         
         # Update an existing row if this same command has already been run with these params
         # with this code
-        (ncalls, avgtime, avgalloc) = combine_benchmark_results_with_existing_row(command, nodes, edges, ncalls, avgtime, avgalloc)
-        values_string = "'$command',$nodes,$edges,$ncalls,$avgtime,$avgalloc"
+        (trials, avgtime, avgalloc) = combine_benchmark_results_with_existing_row(command, nodes, edges, trials, avgtime, avgalloc)
+        values_string = "'$command',$nodes,$edges,$trials,$avgtime,$avgalloc"
 
         insert_with_hash_and_date(benchmark_timing_table, columns_string, values_string)
     end
@@ -157,7 +157,7 @@ end
 Checks if this benchmark result has already been computed on this commit, and if so, returns 
 the updated average combining these two runs so we can update the row instead of inserting a new one.
 """
-function combine_benchmark_results_with_existing_row(command, nodes, edges, ncalls, avgtime, avgalloc)
+function combine_benchmark_results_with_existing_row(command, nodes, edges, trials, avgtime, avgalloc)
     commithash = get_current_git_hash()
     # For now, assume there is just one
     prev_row = query_db("select ncalls, avgtime, avgalloc from $benchmark_timing_table 
@@ -166,10 +166,10 @@ function combine_benchmark_results_with_existing_row(command, nodes, edges, ncal
         return (ncalls, avgtime, avgalloc)
     end
 
-    trials = ncalls + prev_row["ncalls"][1]
+    new_trials = trials + prev_row["ncalls"][1]
     new_avgtime = ((avgtime * ncalls) + (prev_row["ncalls"][1] * prev_row["avgtime"][1])) / trials
     new_avgalloc = ((avgalloc * ncalls) + (prev_row["ncalls"][1] * prev_row["avgalloc"][1])) / trials
-    return (trials, new_avgtime, new_avgalloc)
+    return (new_trials, new_avgtime, new_avgalloc)
 end
 
 # export table to readme.
