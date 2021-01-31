@@ -7,6 +7,22 @@ function drop_table(name)
     query_db("drop table if exists $name;")
 end
 
+function alter_table(table, command)
+    query_db("alert table $table $command")
+end
+
+function change_col_name(table, old_col, new_col)
+    alter_table(table, "rename column $old_col to $new_col")
+end
+
+function add_column(table, column, type)
+    alter_table(table, "add column $column $type")
+end
+
+function change_table_name(old, new)
+    alter_table(table, "rename $old to $new")
+end
+
 """
     initialize_table(schema_file_name,table_name,overwrite)
 
@@ -17,6 +33,9 @@ function initialize_table(schema_file_name,table_name,overwrite)
     f = open(schema_file_name)
     columns_and_types = join(readlines(f), ", ")
     if_not_exists = overwrite ? "" : "if not exists"
+    exists = size(query_db("select 1 from sqlite_master where type = 'table' and name='$table_name'"))[1] |> bool
+    # TODO: with `exists` we could check for an update to schema, but seems annoying and not
+    # worth effort for the moment
     if overwrite
         drop_table(table_name)
     end
