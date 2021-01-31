@@ -82,6 +82,7 @@ Profile `proportion_are_gossipable(n,k)` updating `to` with `T` trials.
 """
 function  profile_pag(n::Integer, k::Integer, trials, to::TimerOutput)
     result = 0.0
+    proportion_are_gossipable(n,k)
     for t=1:trials
         # result is deterministic, so ok its overwritten on each loop
         result = @timeit to "pag($(n),$(k))" proportion_are_gossipable(n,k)
@@ -167,8 +168,8 @@ function combine_benchmark_results_with_existing_row(command, nodes, edges, tria
     end
 
     new_trials = trials + prev_row["ncalls"][1]
-    new_avgtime = ((avgtime * ncalls) + (prev_row["ncalls"][1] * prev_row["avgtime"][1])) / trials
-    new_avgalloc = ((avgalloc * ncalls) + (prev_row["ncalls"][1] * prev_row["avgalloc"][1])) / trials
+    new_avgtime = ((avgtime * trials) + (prev_row["ncalls"][1] * prev_row["avgtime"][1])) / new_trials
+    new_avgalloc = ((avgalloc * trials) + (prev_row["ncalls"][1] * prev_row["avgalloc"][1])) / new_trials
     return (new_trials, new_avgtime, new_avgalloc)
 end
 
