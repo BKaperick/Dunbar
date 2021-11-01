@@ -106,4 +106,5 @@ pag7      | 28 / 270,322                   | Constant-time inprovement changing 
 Again, for the motivating application, the goal is to do these compations for `n~150`, so we include that as reference.
 
 
-
+# References
+Dunbar RI (1995). "Neocortex size and group size in primates: A test of the hypothesis". Journal of Human Evolution. 28 (3): 287–96. 
